@@ -1,0 +1,103 @@
+<?xml version="1.0" standalone="no"?>
+<ExcelFile Name="XP.xla" IsAddin="True">
+	<Meta>
+		<ProjectName>xpMaster</ProjectName>
+		<FileName>XP.xla</FileName>
+		<Path>C:\Users\dano\AppData\Roaming\Microsoft\AddIns</Path>
+		<IsAddin>True</IsAddin>
+		<Author>dano@xpotential.com</Author>
+		<Description>XP add-in that selects whether XPlinkedin is installed or not</Description>
+	</Meta>
+	<Sheets>
+		<Sheet1 Id="1" Type="Worksheet"/>
+	</Sheets>
+	<VBComponents>
+		<ThisWorkbook Id="1" Type="Document">
+			<CodeFile>ThisWorkbook.vb</CodeFile>
+			<CountOfDeclarationLines>1</CountOfDeclarationLines>
+			<CountOfLines>32</CountOfLines>
+		</ThisWorkbook>
+		<Sheet1 Id="2"/>
+		<Main Id="3" Type="StdModule">
+			<CodeFile>Main.bas</CodeFile>
+			<CountOfDeclarationLines>7</CountOfDeclarationLines>
+			<CountOfLines>95</CountOfLines>
+		</Main>
+		<exportXml Id="4" Type="StdModule">
+			<CodeFile>exportXml.bas</CodeFile>
+			<CountOfDeclarationLines>1</CountOfDeclarationLines>
+			<CountOfLines>39</CountOfLines>
+		</exportXml>
+		<exportCode Id="5" Type="StdModule">
+			<CodeFile>exportCode.bas</CodeFile>
+			<CountOfDeclarationLines>11</CountOfDeclarationLines>
+			<CountOfLines>239</CountOfLines>
+		</exportCode>
+		<JS Id="6" Type="ClassModule">
+			<CodeFile>JS.cls</CodeFile>
+			<CountOfDeclarationLines>29</CountOfDeclarationLines>
+			<CountOfLines>256</CountOfLines>
+		</JS>
+		<testJSstaticClass Id="7" Type="StdModule">
+			<CodeFile>testJSstaticClass.bas</CodeFile>
+			<CountOfDeclarationLines>1</CountOfDeclarationLines>
+			<CountOfLines>25</CountOfLines>
+		</testJSstaticClass>
+		<XmlCreator Id="8" Type="StdModule">
+			<CodeFile>XmlCreator.bas</CodeFile>
+			<CountOfDeclarationLines>1</CountOfDeclarationLines>
+			<CountOfLines>143</CountOfLines>
+		</XmlCreator>
+	</VBComponents>
+	<References>
+		<VBA>
+			<Description>Visual Basic For Applications</Description>
+			<Version>4.0</Version>
+			<BuiltIn>True</BuiltIn>
+			<GUID>{000204EF-0000-0000-C000-000000000046}</GUID>
+			<FullPath>C:\Program Files (x86)\Common Files\Microsoft Shared\VBA\VBA6\VBE6.DLL</FullPath>
+		</VBA>
+		<Excel>
+			<Description>Microsoft Excel 12.0 Object Library</Description>
+			<Version>1.6</Version>
+			<BuiltIn>True</BuiltIn>
+			<GUID>{00020813-0000-0000-C000-000000000046}</GUID>
+			<FullPath>C:\Program Files (x86)\Microsoft Office\Office12\EXCEL.EXE</FullPath>
+		</Excel>
+		<stdole>
+			<Description>OLE Automation</Description>
+			<Version>2.0</Version>
+			<BuiltIn>False</BuiltIn>
+			<GUID>{00020430-0000-0000-C000-000000000046}</GUID>
+			<FullPath>C:\Windows\SysWOW64\stdole2.tlb</FullPath>
+		</stdole>
+		<VBIDE>
+			<Description>Microsoft Visual Basic for Applications Extensibility 5.3</Description>
+			<Version>5.3</Version>
+			<BuiltIn>False</BuiltIn>
+			<GUID>{0002E157-0000-0000-C000-000000000046}</GUID>
+			<FullPath>C:\Program Files (x86)\Common Files\Microsoft Shared\VBA\VBA6\VBE6EXT.OLB</FullPath>
+		</VBIDE>
+		<MSXML2>
+			<Description>Microsoft XML, v6.0</Description>
+			<Version>6.0</Version>
+			<BuiltIn>False</BuiltIn>
+			<GUID>{F5078F18-C551-11D3-89B9-0000F81FE221}</GUID>
+			<FullPath>C:\Windows\SysWOW64\msxml6.dll</FullPath>
+		</MSXML2>
+		<ADODB>
+			<Description>Microsoft ActiveX Data Objects 2.8 Library</Description>
+			<Version>2.8</Version>
+			<BuiltIn>False</BuiltIn>
+			<GUID>{2A75196C-D9EB-4129-B803-931327F72D5C}</GUID>
+			<FullPath>C:\Program Files (x86)\Common Files\System\ado\msado28.tlb</FullPath>
+		</ADODB>
+		<Office>
+			<Description>Microsoft Office 12.0 Object Library</Description>
+			<Version>2.4</Version>
+			<BuiltIn>False</BuiltIn>
+			<GUID>{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}</GUID>
+			<FullPath>C:\Program Files (x86)\Common Files\Microsoft Shared\OFFICE12\MSO.DLL</FullPath>
+		</Office>
+	</References>
+</ExcelFile>
