@@ -1,6 +1,18 @@
 Attribute VB_Name = "testJSstaticClass"
 Option Explicit
 
+
+'Function to mediate clicks on worksheet hyperlinks
+Function LinkController(URL)
+    Debug.Print "URL: ", URL
+    Set LinkController = Selection 'have to return something...
+    If URL Like "*goog*" Then
+        ThisWorkbook.FollowHyperlink URL
+    Else
+        MsgBox "Can't open this link"
+    End If
+End Function
+
 Sub testJS()
     Dim arr, o, v, x
     

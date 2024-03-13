@@ -27,7 +27,7 @@ Public Sub ExportAllVBAcode()
     
     userAddinsSelected = isSelectedAddins '// skip Addins menu at end if no changes
     
-    Debug.Print "Workbooks:"
+    Debug.Print vbLf & "Workbooks:"
     For i = 1 To Excel.Workbooks.Count
         With Workbooks(i)
             Debug.Print , IIf(.HasVBProject, .VBProject.Name, vbTab), IIf(.Saved, vbTab, "not-saved"), .Name
@@ -104,7 +104,8 @@ Private Sub exportWorkbook(wb As Excel.Workbook)
         .CreateTextFile(m.fldr & m.s & ".xml").Write PrettyPrintXML(XML.XML)
     End With
     
-    Debug.Print PrettyPrintXML(XML.XML)
+''    Debug.Print PrettyPrintXML(XML.XML)
+    Debug.Print vbTab & m.s & ".xml" '' & vbTab & m.fldr
 
 End Sub
 
@@ -192,7 +193,7 @@ Private Sub AddReferences2Xml(pj As VBIDE.VBProject, doc As Object, parente As O
             Call CreateXmlElement(doc, "Version", .Major & "." & .Minor, , nd)
             Call CreateXmlElement(doc, "BuiltIn", .BuiltIn, , nd)
             Call CreateXmlElement(doc, "GUID", .GUID, , nd)
-            Call CreateXmlElement(doc, "FullPath", .FullPath, , nd)
+            If VBA.Len(.Description) > 0 Then Call CreateXmlElement(doc, "FullPath", .FullPath, , nd)
             If .IsBroken Then
                 MsgBox .Name & " has a broken reference to: " & .Name, vbCritical
                 Call CreateXmlElement(doc, "isBroken", .IsBroken, , nd)

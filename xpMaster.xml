@@ -31,7 +31,7 @@
 		<exportCode Id="5" Type="StdModule">
 			<CodeFile>exportCode.bas</CodeFile>
 			<CountOfDeclarationLines>11</CountOfDeclarationLines>
-			<CountOfLines>239</CountOfLines>
+			<CountOfLines>240</CountOfLines>
 		</exportCode>
 		<JS Id="6" Type="ClassModule">
 			<CodeFile>JS.cls</CodeFile>
@@ -41,7 +41,7 @@
 		<testJSstaticClass Id="7" Type="StdModule">
 			<CodeFile>testJSstaticClass.bas</CodeFile>
 			<CountOfDeclarationLines>1</CountOfDeclarationLines>
-			<CountOfLines>25</CountOfLines>
+			<CountOfLines>37</CountOfLines>
 		</testJSstaticClass>
 		<XmlCreator Id="8" Type="StdModule">
 			<CodeFile>XmlCreator.bas</CodeFile>
