@@ -15,7 +15,7 @@
 		<ThisWorkbook Id="1" Type="Document">
 			<CodeFile>ThisWorkbook.vb</CodeFile>
 			<CountOfDeclarationLines>1</CountOfDeclarationLines>
-			<CountOfLines>32</CountOfLines>
+			<CountOfLines>35</CountOfLines>
 		</ThisWorkbook>
 		<Sheet1 Id="2"/>
 		<Main Id="3" Type="StdModule">
@@ -31,23 +31,23 @@
 		<exportCode Id="5" Type="StdModule">
 			<CodeFile>exportCode.bas</CodeFile>
 			<CountOfDeclarationLines>11</CountOfDeclarationLines>
-			<CountOfLines>240</CountOfLines>
+			<CountOfLines>258</CountOfLines>
 		</exportCode>
-		<JS Id="6" Type="ClassModule">
-			<CodeFile>JS.cls</CodeFile>
-			<CountOfDeclarationLines>29</CountOfDeclarationLines>
-			<CountOfLines>256</CountOfLines>
-		</JS>
-		<testJSstaticClass Id="7" Type="StdModule">
+		<testJSstaticClass Id="6" Type="StdModule">
 			<CodeFile>testJSstaticClass.bas</CodeFile>
 			<CountOfDeclarationLines>1</CountOfDeclarationLines>
-			<CountOfLines>37</CountOfLines>
+			<CountOfLines>38</CountOfLines>
 		</testJSstaticClass>
-		<XmlCreator Id="8" Type="StdModule">
+		<XmlCreator Id="7" Type="StdModule">
 			<CodeFile>XmlCreator.bas</CodeFile>
 			<CountOfDeclarationLines>1</CountOfDeclarationLines>
 			<CountOfLines>143</CountOfLines>
 		</XmlCreator>
+		<Module1 Id="8" Type="StdModule">
+			<CodeFile>Module1.bas</CodeFile>
+			<CountOfDeclarationLines>1</CountOfDeclarationLines>
+			<CountOfLines>23</CountOfLines>
+		</Module1>
 	</VBComponents>
 	<References>
 		<VBA>

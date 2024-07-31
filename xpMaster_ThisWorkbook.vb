@@ -21,6 +21,8 @@ Private Sub Workbook_Open()
         .OnKey "{F6}", "Main.xpF6"                      'F6 toggle AutoFilter FreezeTopRow
         .OnKey "{F7}", "Main.xpF7"                      'F7 usedrange
     End With
+''    Application.OnTime now, "'" & ThisWorkbook.FullName & "'!Main.initEvents"
+''    Main.initEvents
 End Sub
 
 Private Sub Workbook_AddinUninstall()
@@ -34,6 +36,7 @@ Private Sub Workbook_AddinUninstall()
         .OnKey "{F6}"
         .OnKey "{F7}"
     End With
+''    Main.killEvents
 End Sub
 
 Public Sub testAccess()
