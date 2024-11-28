@@ -3,7 +3,7 @@ Option Explicit
 
 Sub Tester()
 
-    Dim XML As Object, rt As Object, nd As Object, i As Long, n As Long
+    Dim XML As Object, rt As Object, nd As Object, i As Long, N As Long
     
     Set XML = EmptyDocument()
     
@@ -14,11 +14,11 @@ Sub Tester()
     For i = 1 To 3
         Set nd = CreateXmlElement(XML, "config", "CFG" & i, Array("type", "Typ" & i))
         rt.appendChild nd
-        For n = 1 To 4
+        For N = 1 To 4
             nd.appendChild _
-                 CreateXmlElement(XML, "item", "ITM" & n, _
-                                      Array("name", "It's a Test " & n))
-        Next n
+                 CreateXmlElement(XML, "item", "ITM" & N, _
+                                      Array("name", "It's a Test " & N))
+        Next N
     Next i
 ''    Debug.Print XML.XML
     Debug.Print PrettyPrintXML(XML.XML)
@@ -27,8 +27,8 @@ End Sub
 
 ' ### everything below here is a utility method ###
 
-'Utility method: create and return an element, with
-'   optional value and attributes
+'Utility method: create and return an element, with optional value and attributes
+'               CreateXmlElement(doc, elName, elValue, attributes{name1, value1, name2 ...}, elParent)
 Public Function CreateXmlElement(doc As Object, elementName As String, _
                             Optional elementValue As String, _
                             Optional attributesArray As Variant = Empty, _
@@ -60,17 +60,17 @@ Public Function CreateXmlElement(doc As Object, elementName As String, _
     Set CreateXmlElement = e
 End Function
 
-'create and return an empty xml doc
-Public Function EmptyDocument() As Object
+
+Public Function EmptyDocument() As Object           '//create and return an empty xml doc
     Dim XML
     Set XML = CreateObject("MSXML2.DOMDocument")
-    XML.LoadXML ""
+    XML.LoadXML VBA.vbNullString
     XML.appendChild XML.createProcessingInstruction("xml", "version='1.0' encoding='UTF-8'") '// 'UTF-16'
     Set EmptyDocument = XML
 End Function
 
-'https://stackoverflow.com/questions/1118576/how-can-i-pretty-print-xml-source-using-vb6-and-msxml
 Public Function PrettyPrintXML(s As String) As String
+'https://stackoverflow.com/questions/1118576/how-can-i-pretty-print-xml-source-using-vb6-and-msxml
   Dim Writer As Object 'New MXXMLWriter60
 ''  Dim Reader As Object 'New SAXXMLReader60
 
@@ -98,9 +98,9 @@ Public Function PrettyPrintXML(s As String) As String
   PrettyPrintXML = Writer.output
 End Function
 
-'// https://stackoverflow.com/a/6406372/4363840
 Private Sub FormatDocToFile(ByVal doc As MSXML2.DOMDocument60, _
                             ByVal FileName As String)
+'// https://stackoverflow.com/a/6406372/4363840
     'Reformats the DOMDocument "Doc" into an ADODB.Stream
     'and writes it to the specified file.
     '

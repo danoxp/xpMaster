@@ -1,15 +1,18 @@
 <?xml version="1.0" standalone="no"?>
 <ExcelFile Name="XP.xla" IsAddin="True">
-	<Meta>
+	<WorkBook>
 		<ProjectName>xpMaster</ProjectName>
 		<FileName>XP.xla</FileName>
 		<Path>C:\Users\dano\AppData\Roaming\Microsoft\AddIns</Path>
 		<IsAddin>True</IsAddin>
 		<Author>dano@xpotential.com</Author>
 		<Description>XP add-in that selects whether XPlinkedin is installed or not</Description>
-	</Meta>
-	<Sheets>
-		<Sheet1 Id="1" Type="Worksheet"/>
+	</WorkBook>
+	<Sheets Count="1">
+		<Sheet1 Id="1" Type="Worksheet" Name="Sheet1">
+			<Name>Sheet1</Name>
+			<CodeName>Sheet1</CodeName>
+		</Sheet1>
 	</Sheets>
 	<VBComponents>
 		<ThisWorkbook Id="1" Type="Document">
@@ -17,7 +20,6 @@
 			<CountOfDeclarationLines>1</CountOfDeclarationLines>
 			<CountOfLines>35</CountOfLines>
 		</ThisWorkbook>
-		<Sheet1 Id="2"/>
 		<Main Id="3" Type="StdModule">
 			<CodeFile>Main.bas</CodeFile>
 			<CountOfDeclarationLines>7</CountOfDeclarationLines>
@@ -30,8 +32,8 @@
 		</exportXml>
 		<exportCode Id="5" Type="StdModule">
 			<CodeFile>exportCode.bas</CodeFile>
-			<CountOfDeclarationLines>11</CountOfDeclarationLines>
-			<CountOfLines>258</CountOfLines>
+			<CountOfDeclarationLines>12</CountOfDeclarationLines>
+			<CountOfLines>366</CountOfLines>
 		</exportCode>
 		<testJSstaticClass Id="6" Type="StdModule">
 			<CodeFile>testJSstaticClass.bas</CodeFile>
@@ -43,11 +45,11 @@
 			<CountOfDeclarationLines>1</CountOfDeclarationLines>
 			<CountOfLines>143</CountOfLines>
 		</XmlCreator>
-		<Module1 Id="8" Type="StdModule">
-			<CodeFile>Module1.bas</CodeFile>
+		<scratchTmp Id="8" Type="StdModule">
+			<CodeFile>scratchTmp.bas</CodeFile>
 			<CountOfDeclarationLines>1</CountOfDeclarationLines>
-			<CountOfLines>23</CountOfLines>
-		</Module1>
+			<CountOfLines>68</CountOfLines>
+		</scratchTmp>
 	</VBComponents>
 	<References>
 		<VBA>
