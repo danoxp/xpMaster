@@ -17,8 +17,8 @@
 	<VBComponents>
 		<ThisWorkbook Id="1" Type="Document">
 			<CodeFile>ThisWorkbook.vb</CodeFile>
-			<CountOfDeclarationLines>1</CountOfDeclarationLines>
-			<CountOfLines>35</CountOfLines>
+			<CountOfDeclarationLines>3</CountOfDeclarationLines>
+			<CountOfLines>58</CountOfLines>
 		</ThisWorkbook>
 		<Main Id="3" Type="StdModule">
 			<CodeFile>Main.bas</CodeFile>
@@ -27,13 +27,13 @@
 		</Main>
 		<exportXml Id="4" Type="StdModule">
 			<CodeFile>exportXml.bas</CodeFile>
-			<CountOfDeclarationLines>1</CountOfDeclarationLines>
-			<CountOfLines>39</CountOfLines>
+			<CountOfDeclarationLines>2</CountOfDeclarationLines>
+			<CountOfLines>40</CountOfLines>
 		</exportXml>
 		<exportCode Id="5" Type="StdModule">
 			<CodeFile>exportCode.bas</CodeFile>
 			<CountOfDeclarationLines>12</CountOfDeclarationLines>
-			<CountOfLines>366</CountOfLines>
+			<CountOfLines>369</CountOfLines>
 		</exportCode>
 		<testJSstaticClass Id="6" Type="StdModule">
 			<CodeFile>testJSstaticClass.bas</CodeFile>
@@ -50,6 +50,11 @@
 			<CountOfDeclarationLines>1</CountOfDeclarationLines>
 			<CountOfLines>68</CountOfLines>
 		</scratchTmp>
+		<clsEvents Id="9" Type="ClassModule">
+			<CodeFile>clsEvents.cls</CodeFile>
+			<CountOfDeclarationLines>8</CountOfDeclarationLines>
+			<CountOfLines>33</CountOfLines>
+		</clsEvents>
 	</VBComponents>
 	<References>
 		<VBA>
@@ -101,5 +106,12 @@
 			<GUID>{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}</GUID>
 			<FullPath>C:\Program Files (x86)\Common Files\Microsoft Shared\OFFICE12\MSO.DLL</FullPath>
 		</Office>
+		<MSForms>
+			<Description>Microsoft Forms 2.0 Object Library</Description>
+			<Version>2.0</Version>
+			<BuiltIn>False</BuiltIn>
+			<GUID>{0D452EE1-E08F-101A-852E-02608C4D0BB4}</GUID>
+			<FullPath>C:\Windows\SysWOW64\FM20.DLL</FullPath>
+		</MSForms>
 	</References>
 </ExcelFile>

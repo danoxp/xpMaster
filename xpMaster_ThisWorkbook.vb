@@ -9,6 +9,34 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = True
 Option Explicit
 
+Private WithEvents oEvents As clsEvents
+Attribute oEvents.VB_VarHelpID = -1
+
+'// oEvents, clsEvents - Begin
+Public Sub TurnOnAppEvents()
+    Set oEvents = New clsEvents
+End Sub
+
+Public Sub TurnOffAppEvents()
+    Set oEvents = Nothing
+End Sub
+
+Private Sub oEvents_MySheetChange()
+    Debug.Print "ThisWorkbook: oEvents_MySheetChange"
+''    VBA.DoEvents  '// this didn't work???s
+    Debug.Print "ThisWorkbook: oEvents_MySheetChange-END:"; oEvents.N
+End Sub
+'// oEvents, clsEvents - End
+
+Public Sub testAccess(s1 As String, s2 As String)
+    Debug.Print "testAccess", s1, s2
+End Sub
+
+Public Sub testAccessN(N As Long)
+    Debug.Print "testAccessN:"; N
+End Sub
+
+
 Private Sub Workbook_Open()
     Debug.Print "event: ", ThisWorkbook.Name, "ThisWorkbook.Workbook_Open"
 ''    Application.CommandBars(1).Reset
@@ -37,8 +65,4 @@ Private Sub Workbook_AddinUninstall()
         .OnKey "{F7}"
     End With
 ''    Main.killEvents
-End Sub
-
-Public Sub testAccess()
-    Debug.Print "access"
 End Sub

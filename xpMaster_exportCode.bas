@@ -43,7 +43,7 @@ Public Sub ExportAllVBAcode()
                 Debug.Assert False
             Case Not .HasVBProject  '// does this ever happen? All wb have VBProject?
                 Debug.Print "No VBProject"
-                If VBA.MsgBox(.Name & " has No VBProject.  Save Workbook Xml?", vbYesNo, .FullName) = vbYes Then exportWorkbook Workbooks(i)
+                If .Name <> "Book1" Then If VBA.MsgBox(.Name & " has No VBProject.  Save Workbook Xml?", vbYesNo, .FullName) = vbYes Then exportWorkbook Workbooks(i)
             Case .VBProject.Protection = vbext_pp_locked
                 Debug.Print .Name; ": Protected - skipped"
                 Debug.Assert False
@@ -84,12 +84,12 @@ Public Sub ExportAllVBAcode()
     If Not isVBEPermissionsOff Then MsgBox "VBE permissions are on, dangerous", vbCritical
 End Sub
 
-Private Sub exportWorkbook(wb As Excel.Workbook)
+Private Sub exportWorkbook(Wb As Excel.Workbook)
     Dim XML As Object   '// Document
     Dim rt As Object    '// root for nodes to add
     Dim nd As Object    '// node
     
-    With wb.VBProject
+    With Wb.VBProject
         
         '// Git subfolder [Begin] name and check it:
         m.s = .Name
@@ -105,23 +105,23 @@ Private Sub exportWorkbook(wb As Excel.Workbook)
         
         Set XML = XmlCreator.EmptyDocument()
         '// rt is ExcelFile
-        Set rt = CreateXmlElement(XML, "ExcelFile", , Array("Name", wb.Name), XML)
-        If wb.IsAddin Then rt.setAttribute "IsAddin", "True"
+        Set rt = CreateXmlElement(XML, "ExcelFile", , Array("Name", Wb.Name), XML)
+        If Wb.IsAddin Then rt.setAttribute "IsAddin", "True"
         '// nd is WorkBook
         Set nd = CreateXmlElement(XML, "WorkBook", , , rt)
         Call CreateXmlElement(XML, "ProjectName", .Name, , nd)
-        Call CreateXmlElement(XML, "FileName", wb.Name, , nd)
-        Call CreateXmlElement(XML, "Path", wb.Path, , nd)
-        Call CreateXmlElement(XML, "IsAddin", wb.IsAddin, , nd)
-        Call CreateXmlElement(XML, "Author", wb.Author, , nd)
+        Call CreateXmlElement(XML, "FileName", Wb.Name, , nd)
+        Call CreateXmlElement(XML, "Path", Wb.Path, , nd)
+        Call CreateXmlElement(XML, "IsAddin", Wb.IsAddin, , nd)
+        Call CreateXmlElement(XML, "Author", Wb.Author, , nd)
         Call CreateXmlElement(XML, "Description", .Description, , nd)
     End With
     
-    addSheets2Xml wb, XML, rt   '// WorkBook, XmlDocument, ExcelFile node
+    addSheets2Xml Wb, XML, rt   '// WorkBook, XmlDocument, ExcelFile node
     
-    addVBProject wb.VBProject, XML, rt
+    addVBProject Wb.VBProject, XML, rt
     
-    addReferences2Xml wb.VBProject, XML, rt
+    addReferences2Xml Wb.VBProject, XML, rt
     
     CreateObject("scripting.filesystemobject").CreateTextFile(m.fldr & m.s & ".xml").Write PrettyPrintXML(XML.XML)
     
@@ -171,24 +171,24 @@ Private Sub addVBProject(project As VBProject, doc As Object, parente As Object)
 
 End Sub
 
-Private Sub addSheets2Xml(wb As Workbook, doc As Object, parente As Object)
+Private Sub addSheets2Xml(Wb As Workbook, doc As Object, parente As Object)
     Dim fso As Object
     Dim i As Long
     Dim nd As Object
     Dim rt As Object ', rrt As Object
     
-    Set rt = XmlCreator.CreateXmlElement(doc, "Sheets", , Array("Count", wb.Sheets.Count), parente)
+    Set rt = XmlCreator.CreateXmlElement(doc, "Sheets", , Array("Count", Wb.Sheets.Count), parente)
     Set fso = CreateObject("scripting.filesystemobject")
 
-    For i = 1 To wb.Sheets.Count: With wb.Sheets(i)
-        Set nd = CreateXmlElement(doc, .CodeName, , Array("Id", i, "Type", VBA.TypeName(wb.Sheets(i)), "Name", .Name), rt)
+    For i = 1 To Wb.Sheets.Count: With Wb.Sheets(i)
+        Set nd = CreateXmlElement(doc, .CodeName, , Array("Id", i, "Type", VBA.TypeName(Wb.Sheets(i)), "Name", .Name), rt)
         Call CreateXmlElement(doc, "Name", .Name, , nd)
         Call CreateXmlElement(doc, "CodeName", .CodeName, , nd)
         If .Visible <> XlSheetVisibility.xlSheetVisible Then
             Call CreateXmlElement(doc, "Visible", IIf(.Visible = xlSheetHidden, "Hidden", "VeryHidden"), , nd)
         End If
 
-        Select Case VBA.TypeName(wb.Sheets(i))
+        Select Case VBA.TypeName(Wb.Sheets(i))
         Case "Worksheet"
             Do
                 If VBA.IsEmpty(.UsedRange) Then Exit Do '// skip blank sheets
@@ -211,41 +211,42 @@ Private Sub addSheets2Xml(wb As Workbook, doc As Object, parente As Object)
             Debug.Assert False
         End Select
         
-        addShapes2Xml wb.Sheets(i), doc, nd
+        addShapes2Xml Wb.Sheets(i), doc, nd
     End With: Next i
 
     Set fso = Nothing
     End Sub
 
-Private Sub addShapes2Xml(sh As Object, doc As Object, parentt As Object)
+Private Sub addShapes2Xml(Sh As Object, doc As Object, parentt As Object)
     Dim rt As Object
     Dim nd As Object
     Dim i As Long ', j As Long
 ''    Dim rrt As Object
 ''    Dim sp As Excel.Shape
     
-    If sh.Shapes.Count = 0 Then Exit Sub
+    If Sh.Shapes.Count = 0 Then Exit Sub
     
-    Debug.Print , "-"; sh.Shapes.Count; "Shapes"
-    Set rt = XmlCreator.CreateXmlElement(doc, "Shapes", , Array("Count", sh.Shapes.Count), parentt)
+    Debug.Print , "- [Shapes:"; Sh.Shapes.Count & "]"
+    Set rt = XmlCreator.CreateXmlElement(doc, "Shapes", , Array("Count", Sh.Shapes.Count), parentt)
     
-    For i = 1 To sh.Shapes.Count: With sh.Shapes(i)
-''    Set sp = sh.Shapes(i)
-        Set nd = CreateXmlElement(doc, shapeTypeName(.Type) & "-" & i, , Array("ZOrder", .ZOrderPosition, "Id", .ID, "Type", shapeTypeName(.Type), "Name", .Name), rt)
-        Call CreateXmlElement(doc, "ZOrderPosition", .ZOrderPosition, , nd)
-        Call CreateXmlElement(doc, "ID", .ID, , nd)
-        Call CreateXmlElement(doc, "Name", .Name, , nd)
-        Call CreateXmlElement(doc, "Type", shapeTypeName(.Type), , nd)
-        Call CreateXmlElement(doc, "Dimensions", "{" & .Left & ", " & .Top & ", " & .Width & ", " & .Height & "}", _
-            Array("Left", .Left, "Top", .Top, "Width", .Width, "Height", .Height), nd)
-        If Len(.AlternativeText) > 0 Then _
-            Call CreateXmlElement(doc, "AlternativeText", VBA.Replace(Replace(.AlternativeText, vbCr, "\r"), vbLf, "\n"), , nd)
-        If TypeName(sh) = "Worksheet" Then _
-            Call CreateXmlElement(doc, "Range", "[" & .TopLeftCell.Address & ":" & .BottomRightCell.Address & "]", _
-            Array("TopLeftCell", .TopLeftCell.Address, "BottomRightCell", .BottomRightCell.Address), nd)
-        Debug.Print , "-"; i; shapeTypeName(.Type), "[" & .Name & "]" ': Stop
-        
-        Select Case .Type   '// MsoShapeType
+    For i = 1 To Sh.Shapes.Count
+        With Sh.Shapes(i)
+    ''    Set sp = sh.Shapes(i)
+            Set nd = CreateXmlElement(doc, shapeTypeName(.Type) & "-" & i, , Array("ZOrder", .ZOrderPosition, "Id", .ID, "Type", shapeTypeName(.Type), "Name", .Name), rt)
+            Call CreateXmlElement(doc, "ZOrderPosition", .ZOrderPosition, , nd)
+            Call CreateXmlElement(doc, "ID", .ID, , nd)
+            Call CreateXmlElement(doc, "Name", .Name, , nd)
+            Call CreateXmlElement(doc, "Type", shapeTypeName(.Type), , nd)
+            Call CreateXmlElement(doc, "Dimensions", "{" & .Left & ", " & .Top & ", " & .Width & ", " & .Height & "}", _
+                Array("Left", .Left, "Top", .Top, "Width", .Width, "Height", .Height), nd)
+            If Len(.AlternativeText) > 0 Then _
+                Call CreateXmlElement(doc, "AlternativeText", VBA.Replace(Replace(.AlternativeText, vbCr, "\r"), vbLf, "\n"), , nd)
+            If TypeName(Sh) = "Worksheet" Then _
+                Call CreateXmlElement(doc, "Range", "[" & .TopLeftCell.Address & ":" & .BottomRightCell.Address & "]", _
+                Array("TopLeftCell", .TopLeftCell.Address, "BottomRightCell", .BottomRightCell.Address), nd)
+            Debug.Print , "  "; i; shapeTypeName(.Type), "[" & .Name & "]" ': Stop
+            
+            Select Case .Type   '// MsoShapeType
             Case msoChart ': Stop
                 Call CreateXmlElement(doc, "ChartName", .Chart.Name, , nd)
                 If .Chart.HasTitle Then Call CreateXmlElement(doc, "ChartTitle", .Chart.ChartTitle.Caption, , nd)
@@ -253,7 +254,7 @@ Private Sub addShapes2Xml(sh As Object, doc As Object, parentt As Object)
                 Call CreateXmlElement(doc, "ChartStyle", .Chart.ChartStyle, , nd)
                 Call CreateXmlElement(doc, "image", .Chart.Name & ".png", , nd)
                 .Chart.Export FileName:=m.fldr & m.s & "_" & .Chart.Name & ".png", FilterName:="png"
-                Debug.Print , vbTab; "- ["; m.s & "_" & .Chart.Name & ".png]"
+                Debug.Print , , "["; m.s & "_" & .Chart.Name & ".png]"
             Case msoComment ': Stop
                 '// comments are included in SheetXml file
             Case msoTextBox    '// add Caption text
@@ -266,6 +267,8 @@ Private Sub addShapes2Xml(sh As Object, doc As Object, parentt As Object)
                 '// info is in GroupItems.Items(j).TextFrame2.TextRange.Text
             Case msoEmbeddedOLEObject ': Stop
                 Call CreateXmlElement(doc, "ProgID", .OLEFormat.progID, , nd) '// 'Paint.Picture'
+            Case msoOLEControlObject
+                '// .Name 'Control 1'
             Case Else
                 Debug.Assert False
 ''            Case msoCallout: Stop
@@ -275,7 +278,6 @@ Private Sub addShapes2Xml(sh As Object, doc As Object, parentt As Object)
 ''            Case msoLine: Stop
 ''            Case msoLinkedOLEObject: Stop
 ''            Case msoLinkedPicture: Stop
-''            Case msoOLEControlObject: Stop
 ''            Case msoPlaceholder: Stop
 ''            Case msoTextEffect: Stop
 ''            Case msoMedia: Stop
@@ -286,9 +288,10 @@ Private Sub addShapes2Xml(sh As Object, doc As Object, parentt As Object)
 ''            Case msoInk: Stop
 ''            Case msoInkComment: Stop
 ''            Case msoShapeTypeMixed: Stop
-        End Select
-        
-    End With: Next i
+            End Select
+            
+        End With
+    Next i
 End Sub
 
 Function shapeTypeName(N As MsoShapeType) As String
