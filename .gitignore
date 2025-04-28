@@ -1,0 +1,30 @@
+# ignore Executables
+*.exe
+
+# ignore Excel files
+*.xla
+*.xlsm
+*.xls
+
+# Access files
+*.mdb
+*.ldb
+
+# ignore SSH keys
+*.pub
+*.pem
+*.ppk
+
+# ignore temporary Excel files
+~$*
+
+# ignore ALL .log files
+*.log
+
+# ignore binary UserForm
+# + instead we tag `*.frx` in [.gitattributes] as `binary`, so it gets tracked in git
+#*.frx
+
+# ignore ALL files in ANY directory named temp
+temp/
+backup/

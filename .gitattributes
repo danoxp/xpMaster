@@ -1,5 +1,24 @@
 # Auto detect text files and perform LF normalization
-* text=auto
+#* text=auto
 
-# VBA extensions - Mark as binary
+# VBA exported extenstions Preseve CRLF in case of VBA IDE import action
+
+*.bas text eol=crlf
+*.cls text eol=crlf
+*.frm text eol=crlf
+*.vb  text eol=crlf
+
+# exported, but no need for CRLF, will not be imported back into IDE
+*.xml text eol=crlf
+
+# non-VBA files for browser*
+*.js   text eol=lf
+*.html text eol=lf
+*.htm  text eol=lf
+
+# VBA extensions Mark as binary
 *.frx binary
+
+# images (chart images exported in Excel)
+*.png binary
+*.jpg binary
