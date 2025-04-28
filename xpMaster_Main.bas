@@ -94,3 +94,49 @@ Public Sub xpChartSavedAsPng()
     ActiveChart.Export FileName:=s, FilterName:=EXT
     MsgBox s
 End Sub
+
+Sub DeleteBlankSheets(Optional Wb As Workbook)
+    'simply deletes any WorkSheets without data, except 1
+    Dim i As Long
+    Dim N As Long
+    Dim dic As Scripting.Dictionary
+    
+    Application.DisplayAlerts = False
+    Application.EnableEvents = False
+    
+    If Wb Is Nothing Then Set Wb = ActiveWorkbook
+    Set dic = New Dictionary
+    
+    N = Wb.Worksheets.Count
+    For i = N To 1 Step -1
+        With Wb.Worksheets(i)
+            Select Case True
+            Case .UsedRange.Cells.Count > 1
+            Case .UsedRange.Address <> "$A$1"
+            Case Not IsEmpty(Cells(1))
+            Case Else
+                dic(i) = .Name
+            End Select
+        End With
+    Next i
+
+    If dic.Count > 0 Then
+        If MsgBox(VBA.Join(dic.Items(), vbLf), vbOKCancel, "Delete Empty Sheets:") = vbOK Then
+            For i = dic.Count - 1 To 0 Step -1
+                Wb.Sheets(dic.Items(i)).Delete
+            Next i
+        End If
+    End If
+    
+    Application.DisplayAlerts = True
+    Application.EnableEvents = True
+End Sub
+
+Sub ListAllFiles()
+''    Dim t: t = JScript.js.epoch(0)
+    CreateObject("scripting.filesystemobject").CreateTextFile("D:\listAllFiles_toc.log").Write _
+    CreateObject("wscript.shell").exec("cmd /c dir ""C:\*.toc"" /b/s/-c").StdOut.ReadAll
+''    t = js.epoch(0) - t:l Debug.Print t; "ms"
+End Sub
+
+

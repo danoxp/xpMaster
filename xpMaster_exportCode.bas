@@ -18,6 +18,7 @@ Public Sub ExportAllVBAcode()
     '// sheet XML files for data to rebuild sheets with formatting and formulas
     Dim isUserAddInsChanged As Boolean
     Dim i As Long
+    Dim s As String
     
     '// target directory:  %Appdata%\Git\name
     m.gitfldr = Environ("APPDATA") & "\Git\"
@@ -38,12 +39,15 @@ Public Sub ExportAllVBAcode()
             Debug.Print vbLf; i; "'"; .Name; "'",
         
             Select Case True
+            Case Not .Name Like "*.xl*"
+                Debug.Print , .Name; " skipped"
             Case Not .Saved
                 Debug.Print .Name; ": Not Saved - skipped"
-                Debug.Assert False
             Case Not .HasVBProject  '// does this ever happen? All wb have VBProject?
                 Debug.Print "No VBProject"
-                If .Name <> "Book1" Then If VBA.MsgBox(.Name & " has No VBProject.  Save Workbook Xml?", vbYesNo, .FullName) = vbYes Then exportWorkbook Workbooks(i)
+                If VBA.MsgBox(.Name & " has No VBProject.  Save Workbook Xml?", vbYesNo, .FullName) = vbYes Then
+                    exportWorkbook Workbooks(i)
+                End If
             Case .VBProject.Protection = vbext_pp_locked
                 Debug.Print .Name; ": Protected - skipped"
                 Debug.Assert False
@@ -58,25 +62,31 @@ Public Sub ExportAllVBAcode()
 
     For i = 1 To Excel.AddIns.Count
         With AddIns(i)
-            Debug.Print vbLf; i; "'"; .Name; "'"; ,
+''            Debug.Print vbLf; i; "'"; .Name; "'"; ,
             
             Select Case True
             Case Not .Installed
-                Debug.Print "Not Installed"
+                s = s & vbLf & vbTab & i & " '" & .Name & "'"
+                
+''                Debug.Print "Not Installed"
             Case Not Workbooks(.Name).Saved
-                MsgBox .Name & " is not-saved, skipped"
+                Debug.Print vbLf; i; "'"; .Name; "'"; ,
                 Debug.Print "Not Saved - skipped"
+                MsgBox .Name & " is not-saved, skipped"
             Case Else
+                Debug.Print vbLf; i; "'"; .Name; "'"; ,
                 exportWorkbook Workbooks(.Name)
             End Select
         End With
     Next i
     
+    Debug.Print "Not Installed:"; s
+    
     '// List all Installed COMAddIns in immediate window only
     Debug.Print vbLf; "Application.COMAddIns:"; Application.COMAddIns.Count; vbLf; "---------------------"
     For i = 1 To Application.COMAddIns.Count
         With Application.COMAddIns(i)
-            Debug.Print vbLf; i; .progID; vbLf, .Description; vbLf, .GUID
+            Debug.Print vbLf; i; .progID; vbLf, "["; .Description; "]"; vbLf, .GUID
         End With
     Next i
     
@@ -215,22 +225,22 @@ Private Sub addSheets2Xml(Wb As Workbook, doc As Object, parente As Object)
     End With: Next i
 
     Set fso = Nothing
-    End Sub
+End Sub
 
-Private Sub addShapes2Xml(Sh As Object, doc As Object, parentt As Object)
+Private Sub addShapes2Xml(sh As Object, doc As Object, parentt As Object)
     Dim rt As Object
     Dim nd As Object
     Dim i As Long ', j As Long
 ''    Dim rrt As Object
 ''    Dim sp As Excel.Shape
     
-    If Sh.Shapes.Count = 0 Then Exit Sub
+    If sh.Shapes.Count = 0 Then Exit Sub
     
-    Debug.Print , "- [Shapes:"; Sh.Shapes.Count & "]"
-    Set rt = XmlCreator.CreateXmlElement(doc, "Shapes", , Array("Count", Sh.Shapes.Count), parentt)
+    Debug.Print , "- [Shapes:"; sh.Shapes.Count & "]"
+    Set rt = XmlCreator.CreateXmlElement(doc, "Shapes", , Array("Count", sh.Shapes.Count), parentt)
     
-    For i = 1 To Sh.Shapes.Count
-        With Sh.Shapes(i)
+    For i = 1 To sh.Shapes.Count
+        With sh.Shapes(i)
     ''    Set sp = sh.Shapes(i)
             Set nd = CreateXmlElement(doc, shapeTypeName(.Type) & "-" & i, , Array("ZOrder", .ZOrderPosition, "Id", .ID, "Type", shapeTypeName(.Type), "Name", .Name), rt)
             Call CreateXmlElement(doc, "ZOrderPosition", .ZOrderPosition, , nd)
@@ -241,7 +251,7 @@ Private Sub addShapes2Xml(Sh As Object, doc As Object, parentt As Object)
                 Array("Left", .Left, "Top", .Top, "Width", .Width, "Height", .Height), nd)
             If Len(.AlternativeText) > 0 Then _
                 Call CreateXmlElement(doc, "AlternativeText", VBA.Replace(Replace(.AlternativeText, vbCr, "\r"), vbLf, "\n"), , nd)
-            If TypeName(Sh) = "Worksheet" Then _
+            If TypeName(sh) = "Worksheet" Then _
                 Call CreateXmlElement(doc, "Range", "[" & .TopLeftCell.Address & ":" & .BottomRightCell.Address & "]", _
                 Array("TopLeftCell", .TopLeftCell.Address, "BottomRightCell", .BottomRightCell.Address), nd)
             Debug.Print , "  "; i; shapeTypeName(.Type), "[" & .Name & "]" ': Stop

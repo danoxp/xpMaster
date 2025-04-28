@@ -6,7 +6,7 @@
 		<Path>C:\Users\dano\AppData\Roaming\Microsoft\AddIns</Path>
 		<IsAddin>True</IsAddin>
 		<Author>dano@xpotential.com</Author>
-		<Description>XP add-in that selects whether XPlinkedin is installed or not</Description>
+		<Description>XP add-in for baseline extra functionality to Excel</Description>
 	</WorkBook>
 	<Sheets Count="1">
 		<Sheet1 Id="1" Type="Worksheet" Name="Sheet1">
@@ -23,7 +23,7 @@
 		<Main Id="3" Type="StdModule">
 			<CodeFile>Main.bas</CodeFile>
 			<CountOfDeclarationLines>7</CountOfDeclarationLines>
-			<CountOfLines>95</CountOfLines>
+			<CountOfLines>141</CountOfLines>
 		</Main>
 		<exportXml Id="4" Type="StdModule">
 			<CodeFile>exportXml.bas</CodeFile>
@@ -33,7 +33,7 @@
 		<exportCode Id="5" Type="StdModule">
 			<CodeFile>exportCode.bas</CodeFile>
 			<CountOfDeclarationLines>12</CountOfDeclarationLines>
-			<CountOfLines>369</CountOfLines>
+			<CountOfLines>379</CountOfLines>
 		</exportCode>
 		<testJSstaticClass Id="6" Type="StdModule">
 			<CodeFile>testJSstaticClass.bas</CodeFile>
@@ -113,5 +113,12 @@
 			<GUID>{0D452EE1-E08F-101A-852E-02608C4D0BB4}</GUID>
 			<FullPath>C:\Windows\SysWOW64\FM20.DLL</FullPath>
 		</MSForms>
+		<Scripting>
+			<Description>Microsoft Scripting Runtime</Description>
+			<Version>1.0</Version>
+			<BuiltIn>False</BuiltIn>
+			<GUID>{420B2830-E718-11CF-893D-00A0C9054228}</GUID>
+			<FullPath>C:\Windows\SysWOW64\scrrun.dll</FullPath>
+		</Scripting>
 	</References>
 </ExcelFile>

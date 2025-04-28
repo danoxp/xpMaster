@@ -27,8 +27,8 @@ Private Sub Class_Terminate()
     Set XL = Nothing
 End Sub
 
-Private Sub XL_SheetChange(ByVal Sh As Object, ByVal Target As Range)
-    Debug.Print "XP.xla: Events.XL_SheetChange"; N; "Sh: "; Sh.Name, "Target: "; Target.Address
+Private Sub XL_SheetChange(ByVal sh As Object, ByVal Target As Range)
+    Debug.Print "XP.xla: Events.XL_SheetChange"; N; "Sh: "; sh.Name, "Target: "; Target.Address
     If N = 0 Then
 ''        DoEvents
         RaiseEvent MySheetChange

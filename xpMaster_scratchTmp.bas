@@ -25,7 +25,7 @@ End Sub
 
 Sub chartObjectTesting()
     Dim ws As Excel.Worksheet
-    Dim Sh As Excel.Shape
+    Dim sh As Excel.Shape
     Dim co As Excel.ChartObject
     Dim sr As Excel.ShapeRange
     Dim cm As Excel.Comment
@@ -34,23 +34,23 @@ Sub chartObjectTesting()
     Set ws = ActiveSheet
 ''    Stop
     For i = 1 To ws.Shapes.Count
-        Set Sh = ws.Shapes(i)
+        Set sh = ws.Shapes(i)
         Debug.Print "----"; i
-        Debug.Print , "[ID]:"; Sh.ID
-        Debug.Print , "[Name]: "; Sh.Name
-        Debug.Print , "[TopLeftCell]: "; Sh.TopLeftCell.Address
-        Debug.Print , "[BottomRightCell]: "; Sh.BottomRightCell.Address
-        Debug.Print , "[L,T,H,W:]: "; Sh.Left; Sh.Top; Sh.Height; Sh.Width
-        Debug.Print , "[ZorderPos]:"; Sh.ZOrderPosition
-        Debug.Print , "[hasChart]:"; Sh.HasChart
-        Debug.Print , "[AltText]: '"; Sh.AlternativeText; "'"
+        Debug.Print , "[ID]:"; sh.ID
+        Debug.Print , "[Name]: "; sh.Name
+        Debug.Print , "[TopLeftCell]: "; sh.TopLeftCell.Address
+        Debug.Print , "[BottomRightCell]: "; sh.BottomRightCell.Address
+        Debug.Print , "[L,T,H,W:]: "; sh.Left; sh.Top; sh.Height; sh.Width
+        Debug.Print , "[ZorderPos]:"; sh.ZOrderPosition
+        Debug.Print , "[hasChart]:"; sh.HasChart
+        Debug.Print , "[AltText]: '"; sh.AlternativeText; "'"
         Debug.Print "----"
         
-        Select Case Sh.Type
+        Select Case sh.Type
         Case MsoShapeType.msoChart
-            Debug.Assert Sh.HasChart
-            Debug.Print , "[Chart.Name]:"; Sh.Chart.Name
-            Sh.Chart.Export FileName:=Sh.Chart.Name & ".png", FilterName:="png"
+            Debug.Assert sh.HasChart
+            Debug.Print , "[Chart.Name]:"; sh.Chart.Name
+            sh.Chart.Export FileName:=sh.Chart.Name & ".png", FilterName:="png"
             Stop
         Case MsoShapeType.msoComment
             Stop
