@@ -14,7 +14,7 @@ Function LinkController(Url)
 End Function
 
 Sub testJS()
-    Dim arr, o, v, x
+    Dim arr, o, v, X
     Dim js
     
     Debug.Print js.epoch(0)

@@ -1,6 +1,29 @@
 Attribute VB_Name = "scratchTmp"
 Option Explicit
 
+Sub TypeCharacteers()
+    Dim i%  'Integer
+    Dim L&  'Long
+    Dim c@  'Currency, 15 digits
+    Dim Q!  'Single
+    Dim X#  'Double
+    Dim s$  'String
+    Dim v: v = VBA.Conversion.CDec("12345678901234567890123456789") 'Max Decimal
+    Const LLong As Long = &HFFF
+    Const OOctal As Long = &O77
+'    Const BBinary as Long = &B010101
+    
+    Debug.Print TypeName(c)
+    i = 32767
+    L = 2147483647
+    c = VBA.Conversion.CCur("123456789012345")          'Max integer
+    c = VBA.Conversion.CCur("123456789012345.1234")     'Max
+    c = VBA.Conversion.CCur("123456789012345.12349")    'Round
+    v = VBA.Conversion.CDec("12345678901234567890123456789")
+    Debug.Print c; v
+    Stop
+End Sub
+
 Sub makeHyperlinks()
     Dim i As Long
     

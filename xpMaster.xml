@@ -1,124 +1,116 @@
-<?xml version="1.0" standalone="no"?>
-<ExcelFile Name="XP.xla" IsAddin="True">
+﻿<?xml version="1.0" standalone="no"?>
+<ExcelFile IsAddin="True" Name="XP.xla">
 	<WorkBook>
 		<ProjectName>xpMaster</ProjectName>
-		<FileName>XP.xla</FileName>
+		<FullName>C:\Users\dano\AppData\Roaming\Microsoft\AddIns\XP.xla</FullName>
 		<Path>C:\Users\dano\AppData\Roaming\Microsoft\AddIns</Path>
-		<IsAddin>True</IsAddin>
+		<FileName>XP.xla</FileName>
 		<Author>dano@xpotential.com</Author>
 		<Description>XP add-in for baseline extra functionality to Excel</Description>
 	</WorkBook>
 	<Sheets Count="1">
-		<Sheet1 Id="1" Type="Worksheet" Name="Sheet1">
+		<Sheet1 id="sh1" Type="Worksheet" Name="Sheet1">
 			<Name>Sheet1</Name>
 			<CodeName>Sheet1</CodeName>
+			<CellsCount>0</CellsCount>
 		</Sheet1>
 	</Sheets>
 	<VBComponents>
-		<ThisWorkbook Id="1" Type="Document">
+		<VBComponent id="vbc1" Type="Document" Name="ThisWorkbook">
 			<CodeFile>ThisWorkbook.vb</CodeFile>
 			<CountOfDeclarationLines>3</CountOfDeclarationLines>
 			<CountOfLines>58</CountOfLines>
-		</ThisWorkbook>
-		<Main Id="3" Type="StdModule">
+		</VBComponent>
+		<VBComponent id="vbc3" Type="StdModule" Name="Main">
 			<CodeFile>Main.bas</CodeFile>
 			<CountOfDeclarationLines>7</CountOfDeclarationLines>
 			<CountOfLines>141</CountOfLines>
-		</Main>
-		<exportXml Id="4" Type="StdModule">
+		</VBComponent>
+		<VBComponent id="vbc4" Type="StdModule" Name="exportXml">
 			<CodeFile>exportXml.bas</CodeFile>
 			<CountOfDeclarationLines>2</CountOfDeclarationLines>
 			<CountOfLines>40</CountOfLines>
-		</exportXml>
-		<exportCode Id="5" Type="StdModule">
+		</VBComponent>
+		<VBComponent id="vbc5" Type="StdModule" Name="exportCode">
 			<CodeFile>exportCode.bas</CodeFile>
-			<CountOfDeclarationLines>12</CountOfDeclarationLines>
-			<CountOfLines>379</CountOfLines>
-		</exportCode>
-		<testJSstaticClass Id="6" Type="StdModule">
+			<CountOfDeclarationLines>13</CountOfDeclarationLines>
+			<CountOfLines>441</CountOfLines>
+		</VBComponent>
+		<VBComponent id="vbc6" Type="StdModule" Name="testJSstaticClass">
 			<CodeFile>testJSstaticClass.bas</CodeFile>
 			<CountOfDeclarationLines>1</CountOfDeclarationLines>
 			<CountOfLines>38</CountOfLines>
-		</testJSstaticClass>
-		<XmlCreator Id="7" Type="StdModule">
+		</VBComponent>
+		<VBComponent id="vbc7" Type="StdModule" Name="XmlCreator">
 			<CodeFile>XmlCreator.bas</CodeFile>
 			<CountOfDeclarationLines>1</CountOfDeclarationLines>
 			<CountOfLines>143</CountOfLines>
-		</XmlCreator>
-		<scratchTmp Id="8" Type="StdModule">
+		</VBComponent>
+		<VBComponent id="vbc8" Type="StdModule" Name="scratchTmp">
 			<CodeFile>scratchTmp.bas</CodeFile>
 			<CountOfDeclarationLines>1</CountOfDeclarationLines>
-			<CountOfLines>68</CountOfLines>
-		</scratchTmp>
-		<clsEvents Id="9" Type="ClassModule">
+			<CountOfLines>91</CountOfLines>
+		</VBComponent>
+		<VBComponent id="vbc9" Type="ClassModule" Name="clsEvents">
 			<CodeFile>clsEvents.cls</CodeFile>
 			<CountOfDeclarationLines>8</CountOfDeclarationLines>
 			<CountOfLines>33</CountOfLines>
-		</clsEvents>
+		</VBComponent>
 	</VBComponents>
 	<References>
-		<VBA>
+		<Reference id="ref1" Type="0" BuiltIn="True" Name="VBA">
 			<Description>Visual Basic For Applications</Description>
-			<Version>4.0</Version>
-			<BuiltIn>True</BuiltIn>
-			<GUID>{000204EF-0000-0000-C000-000000000046}</GUID>
 			<FullPath>C:\Program Files (x86)\Common Files\Microsoft Shared\VBA\VBA6\VBE6.DLL</FullPath>
-		</VBA>
-		<Excel>
+			<Version>4.0</Version>
+			<GUID>{000204EF-0000-0000-C000-000000000046}</GUID>
+		</Reference>
+		<Reference id="ref2" Type="0" BuiltIn="True" Name="Excel">
 			<Description>Microsoft Excel 12.0 Object Library</Description>
-			<Version>1.6</Version>
-			<BuiltIn>True</BuiltIn>
-			<GUID>{00020813-0000-0000-C000-000000000046}</GUID>
 			<FullPath>C:\Program Files (x86)\Microsoft Office\Office12\EXCEL.EXE</FullPath>
-		</Excel>
-		<stdole>
+			<Version>1.6</Version>
+			<GUID>{00020813-0000-0000-C000-000000000046}</GUID>
+		</Reference>
+		<Reference id="ref3" Type="0" BuiltIn="False" Name="stdole">
 			<Description>OLE Automation</Description>
-			<Version>2.0</Version>
-			<BuiltIn>False</BuiltIn>
-			<GUID>{00020430-0000-0000-C000-000000000046}</GUID>
 			<FullPath>C:\Windows\SysWOW64\stdole2.tlb</FullPath>
-		</stdole>
-		<VBIDE>
-			<Description>Microsoft Visual Basic for Applications Extensibility 5.3</Description>
-			<Version>5.3</Version>
-			<BuiltIn>False</BuiltIn>
-			<GUID>{0002E157-0000-0000-C000-000000000046}</GUID>
-			<FullPath>C:\Program Files (x86)\Common Files\Microsoft Shared\VBA\VBA6\VBE6EXT.OLB</FullPath>
-		</VBIDE>
-		<MSXML2>
-			<Description>Microsoft XML, v6.0</Description>
-			<Version>6.0</Version>
-			<BuiltIn>False</BuiltIn>
-			<GUID>{F5078F18-C551-11D3-89B9-0000F81FE221}</GUID>
-			<FullPath>C:\Windows\SysWOW64\msxml6.dll</FullPath>
-		</MSXML2>
-		<ADODB>
-			<Description>Microsoft ActiveX Data Objects 2.8 Library</Description>
-			<Version>2.8</Version>
-			<BuiltIn>False</BuiltIn>
-			<GUID>{2A75196C-D9EB-4129-B803-931327F72D5C}</GUID>
-			<FullPath>C:\Program Files (x86)\Common Files\System\ado\msado28.tlb</FullPath>
-		</ADODB>
-		<Office>
-			<Description>Microsoft Office 12.0 Object Library</Description>
-			<Version>2.4</Version>
-			<BuiltIn>False</BuiltIn>
-			<GUID>{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}</GUID>
-			<FullPath>C:\Program Files (x86)\Common Files\Microsoft Shared\OFFICE12\MSO.DLL</FullPath>
-		</Office>
-		<MSForms>
-			<Description>Microsoft Forms 2.0 Object Library</Description>
 			<Version>2.0</Version>
-			<BuiltIn>False</BuiltIn>
-			<GUID>{0D452EE1-E08F-101A-852E-02608C4D0BB4}</GUID>
+			<GUID>{00020430-0000-0000-C000-000000000046}</GUID>
+		</Reference>
+		<Reference id="ref4" Type="0" BuiltIn="False" Name="VBIDE">
+			<Description>Microsoft Visual Basic for Applications Extensibility 5.3</Description>
+			<FullPath>C:\Program Files (x86)\Common Files\Microsoft Shared\VBA\VBA6\VBE6EXT.OLB</FullPath>
+			<Version>5.3</Version>
+			<GUID>{0002E157-0000-0000-C000-000000000046}</GUID>
+		</Reference>
+		<Reference id="ref5" Type="0" BuiltIn="False" Name="MSXML2">
+			<Description>Microsoft XML, v6.0</Description>
+			<FullPath>C:\Windows\SysWOW64\msxml6.dll</FullPath>
+			<Version>6.0</Version>
+			<GUID>{F5078F18-C551-11D3-89B9-0000F81FE221}</GUID>
+		</Reference>
+		<Reference id="ref6" Type="0" BuiltIn="False" Name="ADODB">
+			<Description>Microsoft ActiveX Data Objects 2.8 Library</Description>
+			<FullPath>C:\Program Files (x86)\Common Files\System\ado\msado28.tlb</FullPath>
+			<Version>2.8</Version>
+			<GUID>{2A75196C-D9EB-4129-B803-931327F72D5C}</GUID>
+		</Reference>
+		<Reference id="ref7" Type="0" BuiltIn="False" Name="Office">
+			<Description>Microsoft Office 12.0 Object Library</Description>
+			<FullPath>C:\Program Files (x86)\Common Files\Microsoft Shared\OFFICE12\MSO.DLL</FullPath>
+			<Version>2.4</Version>
+			<GUID>{2DF8D04C-5BFA-101B-BDE5-00AA0044DE52}</GUID>
+		</Reference>
+		<Reference id="ref8" Type="0" BuiltIn="False" Name="MSForms">
+			<Description>Microsoft Forms 2.0 Object Library</Description>
 			<FullPath>C:\Windows\SysWOW64\FM20.DLL</FullPath>
-		</MSForms>
-		<Scripting>
+			<Version>2.0</Version>
+			<GUID>{0D452EE1-E08F-101A-852E-02608C4D0BB4}</GUID>
+		</Reference>
+		<Reference id="ref9" Type="0" BuiltIn="False" Name="Scripting">
 			<Description>Microsoft Scripting Runtime</Description>
-			<Version>1.0</Version>
-			<BuiltIn>False</BuiltIn>
-			<GUID>{420B2830-E718-11CF-893D-00A0C9054228}</GUID>
 			<FullPath>C:\Windows\SysWOW64\scrrun.dll</FullPath>
-		</Scripting>
+			<Version>1.0</Version>
+			<GUID>{420B2830-E718-11CF-893D-00A0C9054228}</GUID>
+		</Reference>
 	</References>
 </ExcelFile>

@@ -10,6 +10,7 @@ Private Type thisModule
     s As String
     fldr As String
     gitfldr As String
+    dic As Scripting.Dictionary
 End Type
 
 Public Sub ExportAllVBAcode()
@@ -30,6 +31,8 @@ Public Sub ExportAllVBAcode()
     Debug.Print vbLf & "Export Directory: ["; m.gitfldr; "]"; vbLf; "---------------------"
     
     isUserAddInsChanged = isSelectedAddIns '// skip Addins menu at end if no changes
+    
+    Set m.dic = New Dictionary      '// keep track of git Folder names to prevent duplicates
     
     '// Export all open WorkBooks
     Debug.Print vbLf & "Excel.Workbooks:"; Excel.Workbooks.Count; vbLf; "---------------------"
@@ -103,11 +106,25 @@ Private Sub exportWorkbook(Wb As Excel.Workbook)
         
         '// Git subfolder [Begin] name and check it:
         m.s = .Name
-        If m.s = "VBAProject" Then
-            '// replace generic 'VBAProject' with filename prefix
+        If m.s = "VBAProject" Then          '// replace generic 'VBAProject' with filename prefix
             m.s = Replace(.BuildFileName, ".DLL", vbNullString)
             m.s = VBA.Mid(m.s, VBA.InStrRev(m.s, "\") + 1)
         End If
+        
+        '// avoid overwriting an already exported a Workbook when two projects have the same name
+        If m.dic.Exists(m.s) Then
+            Dim s As String
+            s = m.dic(m.s) & vbLf & vbLf & .BuildFileName & vbLf & "overwrite 1st with 2nd?"
+            If MsgBox(s, vbYesNo, "Duplicate VBProject: " & m.s) = vbNo Then
+                '// use filename prefix instead
+                m.s = Replace(.BuildFileName, ".DLL", vbNullString)
+                m.s = VBA.Mid(m.s, VBA.InStrRev(m.s, "\") + 1)
+            End If
+        End If
+        
+        m.dic(m.s) = .BuildFileName
+        
+        
         m.fldr = m.gitfldr & m.s & "\"
         If VBA.Len(VBA.Dir(m.fldr, vbDirectory)) = 0 Then VBA.MkDir m.fldr
         Debug.Print vbLf; , ; "["; m.s; "]"
@@ -115,14 +132,15 @@ Private Sub exportWorkbook(Wb As Excel.Workbook)
         
         Set XML = XmlCreator.EmptyDocument()
         '// rt is ExcelFile
-        Set rt = CreateXmlElement(XML, "ExcelFile", , Array("Name", Wb.Name), XML)
-        If Wb.IsAddin Then rt.setAttribute "IsAddin", "True"
+        Set rt = CreateXmlElement(XML, "ExcelFile", , Array("IsAddin", IIf(Wb.IsAddin, "True", "False"), "Name", Wb.Name), XML)
+''        If Wb.IsAddin Then rt.setAttribute "IsAddin", "True"
         '// nd is WorkBook
         Set nd = CreateXmlElement(XML, "WorkBook", , , rt)
         Call CreateXmlElement(XML, "ProjectName", .Name, , nd)
-        Call CreateXmlElement(XML, "FileName", Wb.Name, , nd)
+        Call CreateXmlElement(XML, "FullName", Wb.FullName, , nd)
         Call CreateXmlElement(XML, "Path", Wb.Path, , nd)
-        Call CreateXmlElement(XML, "IsAddin", Wb.IsAddin, , nd)
+        Call CreateXmlElement(XML, "FileName", Wb.Name, , nd)
+''        Call CreateXmlElement(XML, "IsAddin", Wb.IsAddin, , nd)
         Call CreateXmlElement(XML, "Author", Wb.Author, , nd)
         Call CreateXmlElement(XML, "Description", .Description, , nd)
     End With
@@ -133,7 +151,8 @@ Private Sub exportWorkbook(Wb As Excel.Workbook)
     
     addReferences2Xml Wb.VBProject, XML, rt
     
-    CreateObject("scripting.filesystemobject").CreateTextFile(m.fldr & m.s & ".xml").Write PrettyPrintXML(XML.XML)
+''    CreateObject("scripting.filesystemobject").CreateTextFile(m.fldr & m.s & ".xml").Write PrettyPrintXML(XML.XML)
+    saveTextToFile PrettyPrintXML(XML.XML), m.fldr & m.s & ".xml", "utf-8"
     
     Debug.Print , m.s & ".xml"  '' & vbTab & m.fldr
 End Sub
@@ -142,12 +161,14 @@ Private Sub addVBProject(project As VBProject, doc As Object, parente As Object)
     Dim rt As Object
     Dim nd As Object
     Dim i As Long
+    Dim D
     
     Set rt = CreateXmlElement(doc, "VBComponents", , , parente)
     For i = 1 To project.VBComponents.Count: With project.VBComponents(i)
         Do
             If .Type = vbext_ct_Document And .CodeModule.CountOfLines < 3 Then Exit Do
-            Set nd = CreateXmlElement(doc, .Name, , Array("Id", i), rt)
+''            Set nd = CreateXmlElement(doc, "VBComponent", , Array("ID", i, "Type", VBA.Choose(.Type, "StdModule", "ClassModule", "MSForm"), "Name", .Name), rt)
+            Set nd = CreateXmlElement(doc, "VBComponent", , Array("id", "vbc" & i), rt)
                 
             Select Case .Type
             Case vbext_ct_Document
@@ -170,10 +191,12 @@ Private Sub addVBProject(project As VBProject, doc As Object, parente As Object)
                 Debug.Print , m.s & "_" & .Name & ".frm"
                 Call CreateXmlElement(doc, "CodeFile", .Name & ".frm", , nd)
                 nd.setAttribute "Type", "MSForm"
-            Case Else       '// .Type = vbext_ct_ActiveXDesigner
+            Case Else
+                '// .Type = vbext_ct_ActiveXDesigner
                 Debug.Assert False
             End Select
             
+            nd.setAttribute "Name", .Name
             Call CreateXmlElement(doc, "CountOfDeclarationLines", .CodeModule.CountOfDeclarationLines, , nd)
             Call CreateXmlElement(doc, "CountOfLines", .CodeModule.CountOfLines, , nd)
         Loop Until True
@@ -182,16 +205,19 @@ Private Sub addVBProject(project As VBProject, doc As Object, parente As Object)
 End Sub
 
 Private Sub addSheets2Xml(Wb As Workbook, doc As Object, parente As Object)
-    Dim fso As Object
     Dim i As Long
     Dim nd As Object
     Dim rt As Object ', rrt As Object
+    Dim filenm As String
+    Dim sxml As String
+    Dim c As Range
+    Dim N As Long
     
     Set rt = XmlCreator.CreateXmlElement(doc, "Sheets", , Array("Count", Wb.Sheets.Count), parente)
-    Set fso = CreateObject("scripting.filesystemobject")
+''    Set fso = CreateObject("scripting.filesystemobject")
 
     For i = 1 To Wb.Sheets.Count: With Wb.Sheets(i)
-        Set nd = CreateXmlElement(doc, .CodeName, , Array("Id", i, "Type", VBA.TypeName(Wb.Sheets(i)), "Name", .Name), rt)
+        Set nd = CreateXmlElement(doc, .CodeName, , Array("id", "sh" & i, "Type", VBA.TypeName(Wb.Sheets(i)), "Name", .Name), rt)
         Call CreateXmlElement(doc, "Name", .Name, , nd)
         Call CreateXmlElement(doc, "CodeName", .CodeName, , nd)
         If .Visible <> XlSheetVisibility.xlSheetVisible Then
@@ -199,32 +225,68 @@ Private Sub addSheets2Xml(Wb As Workbook, doc As Object, parente As Object)
         End If
 
         Select Case VBA.TypeName(Wb.Sheets(i))
+        
         Case "Worksheet"
             Do
-                If VBA.IsEmpty(.UsedRange) Then Exit Do '// skip blank sheets
+                '// skip blank sheets
+                If VBA.IsEmpty(.UsedRange) Then
+                    Call CreateXmlElement(doc, "CellsCount", "0", , nd)
+                    Exit Do
+                End If
+                
+                '// UsedRange, UsedCells
                 Call CreateXmlElement(doc, "UsedRange", .UsedRange.AddressLocal, , nd)
-                '// write shapes
+                Call CreateXmlElement(doc, "CellsCount", .UsedRange.Cells.Count, , nd)
+                N = 0
+                For Each c In .UsedRange.Cells
+                    If VBA.IsEmpty(c) Then N = N + 1
+                Next c
+                Call CreateXmlElement(doc, "CellsEmpty", VBA.CStr(N), , nd)
                 
+                '// write out WorkSheet Xml file of worksheet as excel import format
+                filenm = m.fldr & m.s & "_" & .Name & ".xml"
+                Call CreateXmlElement(doc, "XmlFilename", filenm, , nd) '// add filename to Xml
                 
-                '// write out WorkSheet Xml to reload excel
-                Call CreateXmlElement(doc, "XmlFilename", m.s & "_" & .Name & ".xml", , nd)
-                fso.CreateTextFile(m.fldr & m.s & "_" & .Name & ".xml").Write .UsedRange.Value(xlRangeValueXMLSpreadsheet)
-                fso.CreateTextFile(m.fldr & m.s & "_" & .Name & ".xml").Write .Range(.Cells(1), .UsedRange.Cells(.UsedRange.Cells.Count)).Value(xlRangeValueXMLSpreadsheet)
-                Debug.Print , m.s & "_" & .Name & ".xml"
+                '// get XML string
+                '// xlRangeValueXMLSpreadsheet  - Excel w formats, formulas, and names
+                '// xlRangeValueMSPersistXML    - Recordset format as XML
+                '//   - sometimes, XMLSpreadsheet must be called before MSPersistXML for this to work!
+                '// include Cells(1) in output Range to get full sheet
+                sxml = .Range(.Cells(1), .UsedRange.Cells(.UsedRange.Cells.Count)).Value(xlRangeValueXMLSpreadsheet)
+                saveTextToFile sxml, filenm, "utf-8"
+                Debug.Print , filenm
             Loop Until True
-        Case "Chart" '// Chart ??
+        
+        Case "Chart"
+            '// save chart png and add file to Xml
             Call CreateXmlElement(doc, "image", .Name & ".png", , nd)
             .Export FileName:=m.fldr & m.s & "_" & .Name & ".png", FilterName:="png"
             Debug.Print , m.s & "_" & .Name & ".png"
-''            addShapes2Xml
+        
         Case Else
             Debug.Assert False
+        
         End Select
         
+        '// Shapes added to Xml [TODO] is there any way to save Shapes as png?
         addShapes2Xml Wb.Sheets(i), doc, nd
     End With: Next i
 
-    Set fso = Nothing
+''    Set fso = Nothing
+End Sub
+
+Public Sub saveTextToFile(content, filePath, charset)
+    '// omegastripes JSON2XML.bas
+    With CreateObject("ADODB.Stream")
+        .Type = 2 ' adTypeText
+        .Open
+        .charset = charset
+        .WriteText content
+        .Position = 0
+        .Type = 1 ' TypeBinary
+        .SaveToFile filePath, 2
+        .Close
+    End With
 End Sub
 
 Private Sub addShapes2Xml(sh As Object, doc As Object, parentt As Object)
@@ -242,7 +304,7 @@ Private Sub addShapes2Xml(sh As Object, doc As Object, parentt As Object)
     For i = 1 To sh.Shapes.Count
         With sh.Shapes(i)
     ''    Set sp = sh.Shapes(i)
-            Set nd = CreateXmlElement(doc, shapeTypeName(.Type) & "-" & i, , Array("ZOrder", .ZOrderPosition, "Id", .ID, "Type", shapeTypeName(.Type), "Name", .Name), rt)
+            Set nd = CreateXmlElement(doc, shapeTypeName(.Type) & "-" & i, , Array("ZOrder", .ZOrderPosition, "id", "shp" & .ID, "Type", shapeTypeName(.Type), "Name", .Name), rt)
             Call CreateXmlElement(doc, "ZOrderPosition", .ZOrderPosition, , nd)
             Call CreateXmlElement(doc, "ID", .ID, , nd)
             Call CreateXmlElement(doc, "Name", .Name, , nd)
@@ -327,12 +389,12 @@ Private Sub addReferences2Xml(pj As VBIDE.VBProject, doc As Object, parente As O
     
     For i = 1 To pj.References.Count
         With pj.References(i)
-            Set nd = CreateXmlElement(doc, .Name, , , ret)
+            Set nd = CreateXmlElement(doc, "Reference", , Array("id", "ref" & i, "Type", .Type, "BuiltIn", IIf(.BuiltIn, "True", "False"), "Name", .Name), ret)
             Call CreateXmlElement(doc, "Description", .Description, , nd)
-            Call CreateXmlElement(doc, "Version", .Major & "." & .Minor, , nd)
-            Call CreateXmlElement(doc, "BuiltIn", .BuiltIn, , nd)
-            Call CreateXmlElement(doc, "GUID", .GUID, , nd)
             If VBA.Len(.Description) > 0 Then Call CreateXmlElement(doc, "FullPath", .FullPath, , nd)
+            Call CreateXmlElement(doc, "Version", .Major & "." & .Minor, , nd)
+''            Call CreateXmlElement(doc, "BuiltIn", .BuiltIn, , nd)
+            Call CreateXmlElement(doc, "GUID", .GUID, , nd)
             If .IsBroken Then
                 MsgBox .Name & " has a broken reference to: " & .Name, vbCritical
                 Call CreateXmlElement(doc, "isBroken", .IsBroken, , nd)
