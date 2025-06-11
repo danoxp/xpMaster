@@ -3,17 +3,17 @@ Attribute VB_Name = "exportXml"
 Option Explicit
 
 Public Sub ExportXMLsheets()   '// exports both forms of XML for all non blank sheets in ActiveWorkbook
-    Dim Wb As Excel.Workbook
+    Dim wb As Excel.Workbook
     Dim ai As Excel.AddIn
     Dim cm As Office.COMAddIn
     Dim sh As Excel.Worksheet
     Dim folderName As String
     
     With CreateObject("scripting.filesystemobject")
-        For Each Wb In Excel.Application.Workbooks
-            If Not Wb.Saved Then MsgBox Wb.Name & " not saved, skipped": Exit For
-            folderName = Wb.Path & "\" & Replace(Wb.Name, ".xls", "_")
-            For Each sh In Wb.Worksheets
+        For Each wb In Excel.Application.Workbooks
+            If Not wb.Saved Then MsgBox wb.Name & " not saved, skipped": Exit For
+            folderName = wb.Path & "\" & Replace(wb.Name, ".xls", "_")
+            For Each sh In wb.Worksheets
                 If Not IsEmpty(sh.UsedRange) Then    '// if Not a blank sheet export xml
                     .CreateTextFile(folderName & sh.Name & "_excel.xml").Write sh.UsedRange.Value(xlRangeValueXMLSpreadsheet)
                     Debug.Print (folderName & sh.Name & "_excel.xml")
@@ -21,7 +21,7 @@ Public Sub ExportXMLsheets()   '// exports both forms of XML for all non blank s
                     Debug.Print (folderName & sh.Name & "_MSpersist.xml")
                 End If
             Next sh
-        Next Wb
+        Next wb
         
         For Each ai In Excel.AddIns
             Debug.Print ai.FullName

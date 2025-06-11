@@ -95,7 +95,7 @@ Public Sub xpChartSavedAsPng()
     MsgBox s
 End Sub
 
-Sub DeleteBlankSheets(Optional Wb As Workbook)
+Sub DeleteBlankSheets(Optional wb As Workbook)
     'simply deletes any WorkSheets without data, except 1
     Dim i As Long
     Dim N As Long
@@ -104,12 +104,12 @@ Sub DeleteBlankSheets(Optional Wb As Workbook)
     Application.DisplayAlerts = False
     Application.EnableEvents = False
     
-    If Wb Is Nothing Then Set Wb = ActiveWorkbook
+    If wb Is Nothing Then Set wb = ActiveWorkbook
     Set dic = New Dictionary
     
-    N = Wb.Worksheets.Count
+    N = wb.Worksheets.Count
     For i = N To 1 Step -1
-        With Wb.Worksheets(i)
+        With wb.Worksheets(i)
             Select Case True
             Case .UsedRange.Cells.Count > 1
             Case .UsedRange.Address <> "$A$1"
@@ -123,7 +123,7 @@ Sub DeleteBlankSheets(Optional Wb As Workbook)
     If dic.Count > 0 Then
         If MsgBox(VBA.Join(dic.Items(), vbLf), vbOKCancel, "Delete Empty Sheets:") = vbOK Then
             For i = dic.Count - 1 To 0 Step -1
-                Wb.Sheets(dic.Items(i)).Delete
+                wb.Sheets(dic.Items(i)).Delete
             Next i
         End If
     End If
