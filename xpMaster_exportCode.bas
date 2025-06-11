@@ -16,7 +16,8 @@ Private Type thisModule
     dic As Scripting.Dictionary
 End Type
 
-
+Private Const ROOTDIR$ = "\Git\"
+    
 Public Sub ExportAllVBAcode()
     '// Exports all code in open Workbooks and installed Addins
     '// including Worksheet XML and Workbook VBA code
@@ -27,19 +28,19 @@ Public Sub ExportAllVBAcode()
     
     Const INDENT1$ = vbLf & vbLf
     Const INDENT2$ = vbLf & vbTab & vbTab & vbTab
-    Const ROOTDIR$ = "\Git\"
     
-    '// target directory:  %Appdata%\Git\name
+    '// Permisions to VBE object model: 'Trust' then turn off when finished
+    If Not isVBEPermissionsOn Then MsgBox "cannot export without permissions, exiting", vbInformation, "VBE permissions": Exit Sub
+    
+    '// Addins: select/deselect any for export
+    isUserAddInsChanged = isSelectedAddIns
+    
+    '// Set base directory:  %Appdata%\Git\
     m.fldroot = Environ("APPDATA") & ROOTDIR
     If VBA.Len(VBA.Dir(m.fldroot, vbDirectory)) = 0 Then VBA.MkDir m.fldroot
     Debug.Print vbLf; "Export Directory:"; vbLf; "----------------"; vbLf; , "["; m.fldroot; "]"
     
-    '// 'Trust' VBE object model, then turn off when finished
-    If Not isVBEPermissionsOn Then MsgBox "cannot export without permissions, exiting", vbInformation, "VBE permissions": Exit Sub
-    
-    isUserAddInsChanged = isSelectedAddIns '// skip Addins menu at end if no changes
-    
-    Set m.dic = New Dictionary      '// keep track of git Folder names to detect duplicate overwrites
+    Set m.dic = New Dictionary      '// keep track of exports to detect duplicate overwrites
     
     '// Export all open WorkBooks
     Debug.Print vbLf & "Excel.Workbooks:"; Excel.Workbooks.Count; vbLf; "---------------------"
@@ -52,7 +53,7 @@ Public Sub ExportAllVBAcode()
                 Debug.Print vbLf, " not *.xl*, skip"
             Case Not .Saved
                 Debug.Print vbLf, ".Saved = False, skip"
-            Case Not .HasVBProject  '// never happens, even blank WorkBooks have VBProject?
+            Case Not .HasVBProject
                 Debug.Print vbLf, ".HasVBProject = False, skip"
             Case .VBProject.Protection = vbext_pp_locked
                 Debug.Print vbLf, ".Protection = locked, skip"
@@ -80,7 +81,6 @@ Public Sub ExportAllVBAcode()
                 If VBA.Len(.Subject) > 0 Then s = s & INDENT2 & .Subject
                 On Error GoTo 0
                 s = s & INDENT2 & "[" & .Path & "]"
-                
             Case Not Workbooks(.Name).Saved
                 Debug.Print vbLf; i; "'"; .Name; "'"; ,
                 Debug.Print "Not Saved - skipped"
@@ -93,7 +93,6 @@ Public Sub ExportAllVBAcode()
             End Select
         End With
     Next i
-    
     Debug.Print vbLf; "Not Installed:"; vbLf; "--------------"; s
     
     '// List all COMAddIns in immediate window only
@@ -105,8 +104,12 @@ Public Sub ExportAllVBAcode()
         End With
     Next i
     
-    If isUserAddInsChanged Then Debug.Print isSelectedAddIns    '// only open AddInsSelection if changed
+    '// AddIns: adjust installed AddIns if they were modified to export
+    If isUserAddInsChanged Then Debug.Print isSelectedAddIns
+    
+    '// Permissions: 'Trust Access' unchecked
     If Not isVBEPermissionsOff Then MsgBox "VBE permissions are on, dangerous", vbExclamation
+    
     Set m.dic = Nothing: Set m.wb = Nothing
 End Sub
 
@@ -116,31 +119,30 @@ Private Sub exportWorkbook()
     Dim rt As Object    '// root for nodes to add
     Dim nd As Object    '// node
     
-    With m.wb.VBProject
-        If Not isGitBranchGood Then Debug.Print ;
-        
-        Set doc = XmlCreator.EmptyDocument()
-        doc.preserveWhiteSpace = True
-        '// rt is ExcelFile
-        Set rt = CreateXmlElement(doc, "ExcelFile", , Array("IsAddin", IIf(m.wb.IsAddin, "True", "False"), "Name", m.wb.Name), doc)
-''        If Wb.IsAddin Then rt.setAttribute "IsAddin", "True"
+    If Not isGitBranchGood Then Exit Sub
+    Set doc = XmlCreator.EmptyDocument()
+    doc.preserveWhiteSpace = True
+    
+    With m.wb
+        '// rt is 'ExcelFile'
+        Set rt = CreateXmlElement(doc, "ExcelFile", , Array("IsAddin", IIf(.IsAddin, "True", "False"), "Name", .Name), doc)
         '// nd is WorkBook
         Set nd = CreateXmlElement(doc, "WorkBook", , , rt)
-        Call CreateXmlElement(doc, "ProjectName", .Name, , nd)
-        Call CreateXmlElement(doc, "FullName", m.wb.FullName, , nd)
-        Call CreateXmlElement(doc, "Path", m.wb.Path, , nd)
-        Call CreateXmlElement(doc, "FileName", m.wb.Name, , nd)
-''        Call CreateXmlElement(doc, "IsAddin", m.Wb.IsAddin, , nd)
-        Call CreateXmlElement(doc, "Author", m.wb.Author, , nd)
-        Call CreateXmlElement(doc, "Description", .Description, , nd)
+        Call CreateXmlElement(doc, "FullName", .FullName, , nd)
+        Call CreateXmlElement(doc, "Path", .Path, , nd)
+        Call CreateXmlElement(doc, "FileName", .Name, , nd)
+        Call CreateXmlElement(doc, "Author", .Author, , nd)
+        
+        With .VBProject
+            Call CreateXmlElement(doc, "ProjectName", .Name, , nd)
+            Call CreateXmlElement(doc, "Description", .Description, , nd)
+        End With
+    
+        addSheets2Xml doc, rt   '// WorkBook, XmlDocument, ExcelFile node
+        addVBProject .VBProject, doc, rt
+    
+    addReferences2Xml .VBProject, doc, rt
     End With
-    
-    addSheets2Xml m.wb, doc, rt   '// WorkBook, XmlDocument, ExcelFile node
-    
-    addVBProject m.wb.VBProject, doc, rt
-    
-    addReferences2Xml m.wb.VBProject, doc, rt
-    
 ''    CreateObject("scripting.filesystemobject").CreateTextFile(m.fldVbp & m.s & ".xml").Write PrettyPrintXML(doc.XML)
 ''    saveTextToFile PrettyPrintXML(doc.XML), m.fldVbp & m.s & ".xml", "utf-8"
 ''    saveTextToFile XmlCreator.PrettyPrintXML(doc.XML), m.fldVbp & m.s & ".xml"
@@ -167,8 +169,7 @@ Private Function isGitBranchGood() As Boolean
         '// already exported project with same name?
         If m.dic.Exists(m.s) Then
             s = m.s & vbLf & "already exported from" & m.dic(m.s) & vbLf & "skipped"
-            VBA.MsgBox s, vbOKOnly, "Duplicate Project!"
-            Debug.Print s
+            VBA.MsgBox s, vbOKOnly, "Duplicate Project!": Debug.Print s
             Exit Function   '// returns False
         End If
         
@@ -195,7 +196,7 @@ Private Function isGitBranchGood() As Boolean
         m.gitbranch = VBA.Mid(s, VBA.InStrRev(s, "/") + 1)
         Debug.Print "["; m.gitbranch; "]"
     End Select
-
+    isGitBranchGood = True
 End Function
 
 Private Sub addVBProject(project As VBProject, doc As Object, parente As Object)
@@ -245,7 +246,7 @@ Private Sub addVBProject(project As VBProject, doc As Object, parente As Object)
 
 End Sub
 
-Private Sub addSheets2Xml(wb As Workbook, doc As Object, parente As Object)
+Private Sub addSheets2Xml(doc As Object, parente As Object)
     Dim i As Long
     Dim nd As Object
     Dim rt As Object ', rrt As Object
@@ -254,67 +255,68 @@ Private Sub addSheets2Xml(wb As Workbook, doc As Object, parente As Object)
     Dim c As Range
     Dim N As Long
     
-    Set rt = XmlCreator.CreateXmlElement(doc, "Sheets", , Array("Count", wb.Sheets.Count), parente)
+    Set rt = XmlCreator.CreateXmlElement(doc, "Sheets", , Array("Count", m.wb.Sheets.Count), parente)
 ''    Set fso = CreateObject("scripting.filesystemobject")
 
-    For i = 1 To wb.Sheets.Count
-    With wb.Sheets(i)
-        Set nd = CreateXmlElement(doc, .CodeName, , Array("id", "sh" & i, "Type", VBA.TypeName(wb.Sheets(i)), "Name", .Name), rt)
-        Call CreateXmlElement(doc, "Name", .Name, , nd)
-        Call CreateXmlElement(doc, "CodeName", .CodeName, , nd)
-        If .Visible <> XlSheetVisibility.xlSheetVisible Then
-            Call CreateXmlElement(doc, "Visible", IIf(.Visible = xlSheetHidden, "Hidden", "VeryHidden"), , nd)
-        End If
-
-        Select Case VBA.TypeName(wb.Sheets(i))
-        
-        Case "Worksheet"
-            Do
-                '// skip blank sheets
-                If VBA.IsEmpty(.UsedRange) Then
-                    Call CreateXmlElement(doc, "CellsCount", "0", , nd)
-                    Exit Do
-                End If
-                
-                '// UsedRange, UsedCells
-                Call CreateXmlElement(doc, "UsedRange", .UsedRange.AddressLocal, , nd)
-                Call CreateXmlElement(doc, "CellsCount", .UsedRange.Cells.Count, , nd)
-                N = 0
-                For Each c In .UsedRange.Cells
-                    If VBA.IsEmpty(c) Then N = N + 1
-                Next c
-                Call CreateXmlElement(doc, "CellsEmpty", VBA.CStr(N), , nd)
-                
-                '// write out WorkSheet Xml file of worksheet as excel import format
-                filenm = m.fldvbp & m.s & "_" & .Name & ".xml"
-                Call CreateXmlElement(doc, "XmlFilename", filenm, , nd) '// add filename to Xml
-                
-                '// get XML string
-                '// xlRangeValueXMLSpreadsheet  - Excel w formats, formulas, and names
-                '// xlRangeValueMSPersistXML    - Recordset format as XML
-                '//   - sometimes, XMLSpreadsheet must be called before MSPersistXML for this to work!
-                '// include Cells(1) in output Range to get full sheet
-                sxml = .Range(.Cells(1), .UsedRange.Cells(.UsedRange.Cells.Count)).Value(xlRangeValueXMLSpreadsheet)
-                exportCode.saveTextToFileNoBOM sxml, filenm
-''                XmlCreator.FormatXmlStringToFile sxml, filenm
-                Debug.Print , m.s & "_" & .Name & ".xml"
-            Loop Until True
-        
-        Case "Chart"
-            '// add filename to Xml
-            Call CreateXmlElement(doc, "image", .Name & ".png", , nd)
-            '// save chart png file
-            .Export FileName:=m.fldvbp & m.s & "_" & .Name & ".png", FilterName:="png"
-            Debug.Print , m.s & "_" & .Name & ".png"
-        
-        Case Else
-            Debug.Assert False
-        
-        End Select
-        
-        '// Shapes added to Xml [TODO] is there any way to save Shapes as png?
-        addShapes2Xml wb.Sheets(i), doc, nd
-    End With: Next i
+    For i = 1 To m.wb.Sheets.Count
+        With m.wb.Sheets(i)
+            Set nd = CreateXmlElement(doc, .CodeName, , Array("id", "sh" & i, "Type", VBA.TypeName(m.wb.Sheets(i)), "Name", .Name), rt)
+            Call CreateXmlElement(doc, "Name", .Name, , nd)
+            Call CreateXmlElement(doc, "CodeName", .CodeName, , nd)
+            If .Visible <> XlSheetVisibility.xlSheetVisible Then
+                Call CreateXmlElement(doc, "Visible", IIf(.Visible = xlSheetHidden, "Hidden", "VeryHidden"), , nd)
+            End If
+    
+            Select Case VBA.TypeName(m.wb.Sheets(i))
+            
+            Case "Worksheet"
+                Do
+                    '// skip blank sheets
+                    If VBA.IsEmpty(.UsedRange) Then
+                        Call CreateXmlElement(doc, "CellsCount", "0", , nd)
+                        Exit Do
+                    End If
+                    
+                    '// UsedRange, UsedCells
+                    Call CreateXmlElement(doc, "UsedRange", .UsedRange.AddressLocal, , nd)
+                    Call CreateXmlElement(doc, "CellsCount", .UsedRange.Cells.Count, , nd)
+                    N = 0
+                    For Each c In .UsedRange.Cells
+                        If VBA.IsEmpty(c) Then N = N + 1
+                    Next c
+                    Call CreateXmlElement(doc, "CellsEmpty", VBA.CStr(N), , nd)
+                    
+                    '// write out WorkSheet Xml file of worksheet as excel import format
+                    filenm = m.fldvbp & m.s & "_" & .Name & ".xml"
+                    Call CreateXmlElement(doc, "XmlFilename", filenm, , nd) '// add filename to Xml
+                    
+                    '// get XML string
+                    '// xlRangeValueXMLSpreadsheet  - Excel w formats, formulas, and names
+                    '// xlRangeValueMSPersistXML    - Recordset format as XML
+                    '//   - sometimes, XMLSpreadsheet must be called before MSPersistXML for this to work!
+                    '// include Cells(1) in output Range to get full sheet
+                    sxml = .Range(.Cells(1), .UsedRange.Cells(.UsedRange.Cells.Count)).Value(xlRangeValueXMLSpreadsheet)
+                    exportCode.saveTextToFileNoBOM sxml, filenm
+    ''                XmlCreator.FormatXmlStringToFile sxml, filenm
+                    Debug.Print , m.s & "_" & .Name & ".xml"
+                Loop Until True
+            
+            Case "Chart"
+                '// add filename to Xml
+                Call CreateXmlElement(doc, "image", .Name & ".png", , nd)
+                '// save chart png file
+                .Export FileName:=m.fldvbp & m.s & "_" & .Name & ".png", FilterName:="png"
+                Debug.Print , m.s & "_" & .Name & ".png"
+            
+            Case Else
+                Debug.Assert False
+            
+            End Select
+            
+            '// Shapes added to Xml [TODO] is there any way to save Shapes as png?
+            addShapes2Xml m.wb.Sheets(i), doc, nd
+        End With
+    Next i
 
 ''    Set fso = Nothing
 End Sub

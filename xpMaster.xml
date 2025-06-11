@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="no"?>
 <ExcelFile IsAddin="True" Name="XP.xla">
 	<WorkBook>
-		<ProjectName>xpMaster</ProjectName>
 		<FullName>C:\Users\dano\AppData\Roaming\Microsoft\AddIns\XP.xla</FullName>
 		<Path>C:\Users\dano\AppData\Roaming\Microsoft\AddIns</Path>
 		<FileName>XP.xla</FileName>
 		<Author>dano@xpotential.com</Author>
+		<ProjectName>xpMaster</ProjectName>
 		<Description>XP add-in for baseline extra functionality to Excel</Description>
 	</WorkBook>
 	<Sheets Count="1">
@@ -33,8 +33,8 @@
 		</VBComponent>
 		<VBComponent id="vbc5" Type="StdModule" Name="exportCode">
 			<CodeFile>exportCode.bas</CodeFile>
-			<CountOfDeclarationLines>16</CountOfDeclarationLines>
-			<CountOfLines>508</CountOfLines>
+			<CountOfDeclarationLines>18</CountOfDeclarationLines>
+			<CountOfLines>510</CountOfLines>
 		</VBComponent>
 		<VBComponent id="vbc6" Type="StdModule" Name="testJSstaticClass">
 			<CodeFile>testJSstaticClass.bas</CodeFile>
