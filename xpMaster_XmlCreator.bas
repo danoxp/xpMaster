@@ -61,13 +61,49 @@ Public Function CreateXmlElement(doc As Object, elementName As String, _
 End Function
 
 
-Public Function EmptyDocument() As Object           '//create and return an empty xml doc
+Public Function EmptyDocument() As MSXML2.DOMDocument60           '//create and return an empty xml doc
     Dim XML
-    Set XML = CreateObject("MSXML2.DOMDocument")
-    XML.LoadXML VBA.vbNullString
+''    Set XML = CreateObject("MSXML2.DOMDocument")
+    Set XML = New MSXML2.DOMDocument60
+    XML.loadXML VBA.vbNullString
     XML.appendChild XML.createProcessingInstruction("xml", "version='1.0' encoding='UTF-8'") '// 'UTF-16'
     Set EmptyDocument = XML
 End Function
+
+Public Sub FormatXmlStringToFile(s As String, ByVal FileName As String)
+    Dim rdrDom As MSXML2.SAXXMLReader60
+    Dim stmFormatted As ADODB.Stream
+    Dim wtrFormatted As MSXML2.MXXMLWriter60
+    Dim o As MSXML2.DOMDocument60
+    Set o = New DOMDocument60
+    Debug.Assert o.loadXML(s)
+    Set stmFormatted = New ADODB.Stream
+    With stmFormatted
+        .Open
+        .Type = adTypeBinary
+        Set wtrFormatted = New MSXML2.MXXMLWriter60
+        With wtrFormatted
+            .omitXMLDeclaration = False
+            .standalone = False
+            .byteOrderMark = False
+            .Encoding = "utf-8"
+            .indent = True
+            .output = stmFormatted
+            Set rdrDom = New MSXML2.SAXXMLReader60
+            With rdrDom
+                Set .contentHandler = wtrFormatted
+                Set .dtdHandler = wtrFormatted
+                Set .errorHandler = wtrFormatted
+                .putProperty "http://xml.org/sax/properties/lexical-handler", wtrFormatted
+                .putProperty "http://xml.org/sax/properties/declaration-handler", wtrFormatted
+                .parse o
+            End With
+        End With
+        .SaveToFile FileName, adSaveCreateOverWrite
+'[TODO] UTF-8 BOM - this leaves 3 byte BOM at beginning of file
+        .Close
+    End With
+End Sub
 
 Public Function PrettyPrintXML(s As String) As String
 'https://stackoverflow.com/questions/1118576/how-can-i-pretty-print-xml-source-using-vb6-and-msxml
@@ -95,11 +131,10 @@ Public Function PrettyPrintXML(s As String) As String
       Call .parse(s)
   End With
 
-  PrettyPrintXML = Writer.output
+  PrettyPrintXML = Writer.output & vbCrLf   '// add EOF blank line for `git diff`
 End Function
 
-Private Sub FormatDocToFile(ByVal doc As MSXML2.DOMDocument60, _
-                            ByVal FileName As String)
+Public Sub SaveXmlDocToFilePretty(ByVal doc As MSXML2.DOMDocument60, ByVal FileName As String)
 '// https://stackoverflow.com/a/6406372/4363840
     'Reformats the DOMDocument "Doc" into an ADODB.Stream
     'and writes it to the specified file.
@@ -110,14 +145,16 @@ Private Sub FormatDocToFile(ByVal doc As MSXML2.DOMDocument60, _
     Dim stmFormatted As ADODB.Stream
     Dim wtrFormatted As MSXML2.MXXMLWriter60
     Dim o As MSXML2.DOMDocument60
+    Static byCrLf(1) As Byte    '// vbCrLf as two-byte array
     Set stmFormatted = New ADODB.Stream
+    
     With stmFormatted
         .Open
         .Type = adTypeBinary
         Set wtrFormatted = New MSXML2.MXXMLWriter60
         With wtrFormatted
             .omitXMLDeclaration = False
-            .standalone = True
+            .standalone = False
             .byteOrderMark = False 'If not set (even to False) then
                                    '.encoding is ignored.
             .Encoding = "utf-8"    'Even if .byteOrderMark = True
@@ -136,7 +173,13 @@ Private Sub FormatDocToFile(ByVal doc As MSXML2.DOMDocument60, _
                 .parse doc
             End With
         End With
-        .SaveToFile FileName
+        
+        '// add EOF CRLF using bytes
+''        Debug.Assert stmFormatted.EOS
+        If Not byCrLf(0) Then byCrLf(0) = &HD: byCrLf(1) = &HA
+        .Write byCrLf
+        
+        .SaveToFile FileName, 2 '// adSaveCreateOverWrite
         .Close
     End With
 End Sub

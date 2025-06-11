@@ -3,15 +3,19 @@ Option Explicit
 
 '// #INCLUDE: [Microsoft Visual Basic for Applications Extensibility]
 '// #INCLUDE: [MSXML2]
-'// #INCLUDE: XmlCreator.bas Module
+'// #INCLUDE: [XmlCreator.bas] Module
+'// #INCLUDE: [Scripting] ? for dic.Exists(VBAProject) ?
 
 Private m As thisModule
 Private Type thisModule
+    wb As Excel.Workbook
     s As String
-    fldr As String
-    gitfldr As String
+    fldvbp As String
+    fldroot As String
+    gitbranch As String
     dic As Scripting.Dictionary
 End Type
+
 
 Public Sub ExportAllVBAcode()
     '// Exports all code in open Workbooks and installed Addins
@@ -21,141 +25,178 @@ Public Sub ExportAllVBAcode()
     Dim i As Long
     Dim s As String
     
+    Const INDENT1$ = vbLf & vbLf
+    Const INDENT2$ = vbLf & vbTab & vbTab & vbTab
+    Const ROOTDIR$ = "\Git\"
+    
     '// target directory:  %Appdata%\Git\name
-    m.gitfldr = Environ("APPDATA") & "\Git\"
-    If VBA.Len(VBA.Dir(m.gitfldr, vbDirectory)) = 0 Then VBA.MkDir m.gitfldr
+    m.fldroot = Environ("APPDATA") & ROOTDIR
+    If VBA.Len(VBA.Dir(m.fldroot, vbDirectory)) = 0 Then VBA.MkDir m.fldroot
+    Debug.Print vbLf; "Export Directory:"; vbLf; "----------------"; vbLf; , "["; m.fldroot; "]"
     
     '// 'Trust' VBE object model, then turn off when finished
-    If Not isVBEPermissionsOn Then MsgBox "cannot export without VBE permissions, exit", vbInformation: Exit Sub
-    
-    Debug.Print vbLf & "Export Directory: ["; m.gitfldr; "]"; vbLf; "---------------------"
+    If Not isVBEPermissionsOn Then MsgBox "cannot export without permissions, exiting", vbInformation, "VBE permissions": Exit Sub
     
     isUserAddInsChanged = isSelectedAddIns '// skip Addins menu at end if no changes
     
-    Set m.dic = New Dictionary      '// keep track of git Folder names to prevent duplicates
+    Set m.dic = New Dictionary      '// keep track of git Folder names to detect duplicate overwrites
     
     '// Export all open WorkBooks
     Debug.Print vbLf & "Excel.Workbooks:"; Excel.Workbooks.Count; vbLf; "---------------------"
     For i = 1 To Excel.Workbooks.Count
         With Workbooks(i)
-''            Debug.Print , .Name, IIf(.HasVBProject, .VBProject.Name, vbTab), IIf(.Saved, vbTab, "not-saved")
-            Debug.Print vbLf; i; "'"; .Name; "'",
+            Debug.Print vbLf; i; "["; .Name; "]",
         
             Select Case True
             Case Not .Name Like "*.xl*"
-                Debug.Print , .Name; " skipped"
+                Debug.Print vbLf, " not *.xl*, skip"
             Case Not .Saved
-                Debug.Print .Name; ": Not Saved - skipped"
-            Case Not .HasVBProject  '// does this ever happen? All wb have VBProject?
-                Debug.Print "No VBProject"
-                If VBA.MsgBox(.Name & " has No VBProject.  Save Workbook Xml?", vbYesNo, .FullName) = vbYes Then
-                    exportWorkbook Workbooks(i)
-                End If
+                Debug.Print vbLf, ".Saved = False, skip"
+            Case Not .HasVBProject  '// never happens, even blank WorkBooks have VBProject?
+                Debug.Print vbLf, ".HasVBProject = False, skip"
             Case .VBProject.Protection = vbext_pp_locked
-                Debug.Print .Name; ": Protected - skipped"
-                Debug.Assert False
+                Debug.Print vbLf, ".Protection = locked, skip"
             Case Else
-                exportWorkbook Workbooks(i)
+                Set m.wb = Workbooks(i)
+                exportWorkbook
+                Debug.Print , "["; .Path; "]"
             End Select
         End With
     Next i
 
     '// Export all loaded AddIns
     Debug.Print vbLf; "Excel.AddIns:"; Excel.AddIns.Count; vbLf; "---------------------"
-
     For i = 1 To Excel.AddIns.Count
         With AddIns(i)
-''            Debug.Print vbLf; i; "'"; .Name; "'"; ,
-            
             Select Case True
             Case Not .Installed
-                s = s & vbLf & vbTab & i & " '" & .Name & "'"
+                s = s & INDENT1 & i & " [" & .Name & "]" & INDENT2 & .Title
+                If VBA.Len(.progID) > 0 Then s = s & INDENT2 & .progID
+                If VBA.Len(.CLSID) > 0 Then s = s & INDENT2 & .CLSID
+                On Error Resume Next
+                If VBA.Len(.Author) > 0 Then s = s & INDENT2 & .Author
+                If VBA.Len(.Comments) > 0 Then s = s & INDENT2 & .Comments
+                If VBA.Len(.Keywords) > 0 Then s = s & INDENT2 & .Keywords
+                If VBA.Len(.Subject) > 0 Then s = s & INDENT2 & .Subject
+                On Error GoTo 0
+                s = s & INDENT2 & "[" & .Path & "]"
                 
-''                Debug.Print "Not Installed"
             Case Not Workbooks(.Name).Saved
                 Debug.Print vbLf; i; "'"; .Name; "'"; ,
                 Debug.Print "Not Saved - skipped"
                 MsgBox .Name & " is not-saved, skipped"
             Case Else
-                Debug.Print vbLf; i; "'"; .Name; "'"; ,
-                exportWorkbook Workbooks(.Name)
+                Debug.Print vbLf; i; "["; .Name; "]"; 'vbLf, .Path;
+                Set m.wb = Workbooks(.Name)
+                exportWorkbook
+                Debug.Print , "["; .Path; "]"
             End Select
         End With
     Next i
     
-    Debug.Print "Not Installed:"; s
+    Debug.Print vbLf; "Not Installed:"; vbLf; "--------------"; s
     
-    '// List all Installed COMAddIns in immediate window only
+    '// List all COMAddIns in immediate window only
     Debug.Print vbLf; "Application.COMAddIns:"; Application.COMAddIns.Count; vbLf; "---------------------"
     For i = 1 To Application.COMAddIns.Count
         With Application.COMAddIns(i)
             Debug.Print vbLf; i; .progID; vbLf, "["; .Description; "]"; vbLf, .GUID
+            Debug.Print "Connect: "; IIf(.Connect, "Active", "Not active")
         End With
     Next i
     
     If isUserAddInsChanged Then Debug.Print isSelectedAddIns    '// only open AddInsSelection if changed
-    If Not isVBEPermissionsOff Then MsgBox "VBE permissions are on, dangerous", vbCritical
+    If Not isVBEPermissionsOff Then MsgBox "VBE permissions are on, dangerous", vbExclamation
+    Set m.dic = Nothing: Set m.wb = Nothing
 End Sub
 
-Private Sub exportWorkbook(Wb As Excel.Workbook)
-    Dim XML As Object   '// Document
+Private Sub exportWorkbook()
+    Dim doc As MSXML2.DOMDocument60
+''    Dim doc As Object   '// Document
     Dim rt As Object    '// root for nodes to add
     Dim nd As Object    '// node
     
-    With Wb.VBProject
+    With m.wb.VBProject
+        If Not isGitBranchGood Then Debug.Print ;
         
-        '// Git subfolder [Begin] name and check it:
-        m.s = .Name
-        If m.s = "VBAProject" Then          '// replace generic 'VBAProject' with filename prefix
-            m.s = Replace(.BuildFileName, ".DLL", vbNullString)
-            m.s = VBA.Mid(m.s, VBA.InStrRev(m.s, "\") + 1)
-        End If
-        
-        '// avoid overwriting an already exported a Workbook when two projects have the same name
-        If m.dic.Exists(m.s) Then
-            Dim s As String
-            s = m.dic(m.s) & vbLf & vbLf & .BuildFileName & vbLf & "overwrite 1st with 2nd?"
-            If MsgBox(s, vbYesNo, "Duplicate VBProject: " & m.s) = vbNo Then
-                '// use filename prefix instead
-                m.s = Replace(.BuildFileName, ".DLL", vbNullString)
-                m.s = VBA.Mid(m.s, VBA.InStrRev(m.s, "\") + 1)
-            End If
-        End If
-        
-        m.dic(m.s) = .BuildFileName
-        
-        
-        m.fldr = m.gitfldr & m.s & "\"
-        If VBA.Len(VBA.Dir(m.fldr, vbDirectory)) = 0 Then VBA.MkDir m.fldr
-        Debug.Print vbLf; , ; "["; m.s; "]"
-        '// Git subfolder [End]
-        
-        Set XML = XmlCreator.EmptyDocument()
+        Set doc = XmlCreator.EmptyDocument()
+        doc.preserveWhiteSpace = True
         '// rt is ExcelFile
-        Set rt = CreateXmlElement(XML, "ExcelFile", , Array("IsAddin", IIf(Wb.IsAddin, "True", "False"), "Name", Wb.Name), XML)
+        Set rt = CreateXmlElement(doc, "ExcelFile", , Array("IsAddin", IIf(m.wb.IsAddin, "True", "False"), "Name", m.wb.Name), doc)
 ''        If Wb.IsAddin Then rt.setAttribute "IsAddin", "True"
         '// nd is WorkBook
-        Set nd = CreateXmlElement(XML, "WorkBook", , , rt)
-        Call CreateXmlElement(XML, "ProjectName", .Name, , nd)
-        Call CreateXmlElement(XML, "FullName", Wb.FullName, , nd)
-        Call CreateXmlElement(XML, "Path", Wb.Path, , nd)
-        Call CreateXmlElement(XML, "FileName", Wb.Name, , nd)
-''        Call CreateXmlElement(XML, "IsAddin", Wb.IsAddin, , nd)
-        Call CreateXmlElement(XML, "Author", Wb.Author, , nd)
-        Call CreateXmlElement(XML, "Description", .Description, , nd)
+        Set nd = CreateXmlElement(doc, "WorkBook", , , rt)
+        Call CreateXmlElement(doc, "ProjectName", .Name, , nd)
+        Call CreateXmlElement(doc, "FullName", m.wb.FullName, , nd)
+        Call CreateXmlElement(doc, "Path", m.wb.Path, , nd)
+        Call CreateXmlElement(doc, "FileName", m.wb.Name, , nd)
+''        Call CreateXmlElement(doc, "IsAddin", m.Wb.IsAddin, , nd)
+        Call CreateXmlElement(doc, "Author", m.wb.Author, , nd)
+        Call CreateXmlElement(doc, "Description", .Description, , nd)
     End With
     
-    addSheets2Xml Wb, XML, rt   '// WorkBook, XmlDocument, ExcelFile node
+    addSheets2Xml m.wb, doc, rt   '// WorkBook, XmlDocument, ExcelFile node
     
-    addVBProject Wb.VBProject, XML, rt
+    addVBProject m.wb.VBProject, doc, rt
     
-    addReferences2Xml Wb.VBProject, XML, rt
+    addReferences2Xml m.wb.VBProject, doc, rt
     
-''    CreateObject("scripting.filesystemobject").CreateTextFile(m.fldr & m.s & ".xml").Write PrettyPrintXML(XML.XML)
-    saveTextToFile PrettyPrintXML(XML.XML), m.fldr & m.s & ".xml", "utf-8"
+''    CreateObject("scripting.filesystemobject").CreateTextFile(m.fldVbp & m.s & ".xml").Write PrettyPrintXML(doc.XML)
+''    saveTextToFile PrettyPrintXML(doc.XML), m.fldVbp & m.s & ".xml", "utf-8"
+''    saveTextToFile XmlCreator.PrettyPrintXML(doc.XML), m.fldVbp & m.s & ".xml"
+    XmlCreator.SaveXmlDocToFilePretty doc, m.fldvbp & m.s & ".xml"
     
-    Debug.Print , m.s & ".xml"  '' & vbTab & m.fldr
+    Debug.Print , m.s & ".xml"  '' & vbTab & m.fldVbp
 End Sub
+
+Private Function isGitBranchGood() As Boolean
+    '// check Git subfolder for branch name
+    Dim s As String
+
+    '// get project name: m.s
+    With m.wb.VBProject
+        m.s = .Name: Debug.Print vbLf; , ; "["; m.s; "]";
+        
+        '// switch 'VBAProject' name to excel file prefix
+        If m.s = "VBAProject" Then
+            m.s = Replace(.BuildFileName, ".DLL", vbNullString)
+            m.s = VBA.Mid(m.s, VBA.InStrRev(m.s, "\") + 1)
+            Debug.Print " -> git/["; m.s; "]";
+        End If
+        
+        '// already exported project with same name?
+        If m.dic.Exists(m.s) Then
+            s = m.s & vbLf & "already exported from" & m.dic(m.s) & vbLf & "skipped"
+            VBA.MsgBox s, vbOKOnly, "Duplicate Project!"
+            Debug.Print s
+            Exit Function   '// returns False
+        End If
+        
+        '// add dic(project) = excelfilename
+        m.dic(m.s) = .BuildFileName     '// m.dic("xpMaster") = "XP.xla"
+    End With
+    
+    '// set export Directory
+    m.fldvbp = m.fldroot & m.s & "\"
+    
+    '// does export directory exist?
+    s = m.fldvbp & ".git\"
+    m.gitbranch = vbNullString
+    
+    Select Case True
+    Case VBA.Len(VBA.Dir(m.fldvbp, vbDirectory)) = 0
+        VBA.MkDir m.fldvbp: Debug.Print m.fldvbp; " does not exist, created"
+    Case VBA.Len(VBA.Dir(s, vbDirectory)) = 0
+        Debug.Print " no .git folder, 'git init'"
+    Case VBA.Len(VBA.Dir(s & "HEAD")) = 0
+        Debug.Print "git init, but no commits yet"
+    Case Else
+        s = CreateObject("Scripting.FileSystemObject").OpenTextFile(s & "HEAD").ReadLine
+        m.gitbranch = VBA.Mid(s, VBA.InStrRev(s, "/") + 1)
+        Debug.Print "["; m.gitbranch; "]"
+    End Select
+
+End Function
 
 Private Sub addVBProject(project As VBProject, doc As Object, parente As Object)
     Dim rt As Object
@@ -172,22 +213,22 @@ Private Sub addVBProject(project As VBProject, doc As Object, parente As Object)
                 
             Select Case .Type
             Case vbext_ct_Document
-                .Export m.fldr & m.s & "_" & .Name & ".vb"
+                .Export m.fldvbp & m.s & "_" & .Name & ".vb"
                 Debug.Print , m.s & "_" & .Name & ".vb"
                 Call CreateXmlElement(doc, "CodeFile", .Name & ".vb", , nd)
                 nd.setAttribute "Type", "Document"
             Case vbext_ct_StdModule
-                .Export m.fldr & m.s & "_" & .Name & ".bas"
+                .Export m.fldvbp & m.s & "_" & .Name & ".bas"
                 Debug.Print , m.s & "_" & .Name & ".bas"
                 Call CreateXmlElement(doc, "CodeFile", .Name & ".bas", , nd)
                 nd.setAttribute "Type", "StdModule"
             Case vbext_ct_ClassModule
-                .Export m.fldr & m.s & "_" & .Name & ".cls"
+                .Export m.fldvbp & m.s & "_" & .Name & ".cls"
                 Debug.Print , m.s & "_" & .Name & ".cls"
                 Call CreateXmlElement(doc, "CodeFile", .Name & ".cls", , nd)
                 nd.setAttribute "Type", "ClassModule"
             Case vbext_ct_MSForm
-                .Export m.fldr & m.s & "_" & .Name & ".frm"
+                .Export m.fldvbp & m.s & "_" & .Name & ".frm"
                 Debug.Print , m.s & "_" & .Name & ".frm"
                 Call CreateXmlElement(doc, "CodeFile", .Name & ".frm", , nd)
                 nd.setAttribute "Type", "MSForm"
@@ -204,7 +245,7 @@ Private Sub addVBProject(project As VBProject, doc As Object, parente As Object)
 
 End Sub
 
-Private Sub addSheets2Xml(Wb As Workbook, doc As Object, parente As Object)
+Private Sub addSheets2Xml(wb As Workbook, doc As Object, parente As Object)
     Dim i As Long
     Dim nd As Object
     Dim rt As Object ', rrt As Object
@@ -213,18 +254,19 @@ Private Sub addSheets2Xml(Wb As Workbook, doc As Object, parente As Object)
     Dim c As Range
     Dim N As Long
     
-    Set rt = XmlCreator.CreateXmlElement(doc, "Sheets", , Array("Count", Wb.Sheets.Count), parente)
+    Set rt = XmlCreator.CreateXmlElement(doc, "Sheets", , Array("Count", wb.Sheets.Count), parente)
 ''    Set fso = CreateObject("scripting.filesystemobject")
 
-    For i = 1 To Wb.Sheets.Count: With Wb.Sheets(i)
-        Set nd = CreateXmlElement(doc, .CodeName, , Array("id", "sh" & i, "Type", VBA.TypeName(Wb.Sheets(i)), "Name", .Name), rt)
+    For i = 1 To wb.Sheets.Count
+    With wb.Sheets(i)
+        Set nd = CreateXmlElement(doc, .CodeName, , Array("id", "sh" & i, "Type", VBA.TypeName(wb.Sheets(i)), "Name", .Name), rt)
         Call CreateXmlElement(doc, "Name", .Name, , nd)
         Call CreateXmlElement(doc, "CodeName", .CodeName, , nd)
         If .Visible <> XlSheetVisibility.xlSheetVisible Then
             Call CreateXmlElement(doc, "Visible", IIf(.Visible = xlSheetHidden, "Hidden", "VeryHidden"), , nd)
         End If
 
-        Select Case VBA.TypeName(Wb.Sheets(i))
+        Select Case VBA.TypeName(wb.Sheets(i))
         
         Case "Worksheet"
             Do
@@ -244,7 +286,7 @@ Private Sub addSheets2Xml(Wb As Workbook, doc As Object, parente As Object)
                 Call CreateXmlElement(doc, "CellsEmpty", VBA.CStr(N), , nd)
                 
                 '// write out WorkSheet Xml file of worksheet as excel import format
-                filenm = m.fldr & m.s & "_" & .Name & ".xml"
+                filenm = m.fldvbp & m.s & "_" & .Name & ".xml"
                 Call CreateXmlElement(doc, "XmlFilename", filenm, , nd) '// add filename to Xml
                 
                 '// get XML string
@@ -253,14 +295,16 @@ Private Sub addSheets2Xml(Wb As Workbook, doc As Object, parente As Object)
                 '//   - sometimes, XMLSpreadsheet must be called before MSPersistXML for this to work!
                 '// include Cells(1) in output Range to get full sheet
                 sxml = .Range(.Cells(1), .UsedRange.Cells(.UsedRange.Cells.Count)).Value(xlRangeValueXMLSpreadsheet)
-                saveTextToFile sxml, filenm, "utf-8"
-                Debug.Print , filenm
+                exportCode.saveTextToFileNoBOM sxml, filenm
+''                XmlCreator.FormatXmlStringToFile sxml, filenm
+                Debug.Print , m.s & "_" & .Name & ".xml"
             Loop Until True
         
         Case "Chart"
-            '// save chart png and add file to Xml
+            '// add filename to Xml
             Call CreateXmlElement(doc, "image", .Name & ".png", , nd)
-            .Export FileName:=m.fldr & m.s & "_" & .Name & ".png", FilterName:="png"
+            '// save chart png file
+            .Export FileName:=m.fldvbp & m.s & "_" & .Name & ".png", FilterName:="png"
             Debug.Print , m.s & "_" & .Name & ".png"
         
         Case Else
@@ -269,18 +313,40 @@ Private Sub addSheets2Xml(Wb As Workbook, doc As Object, parente As Object)
         End Select
         
         '// Shapes added to Xml [TODO] is there any way to save Shapes as png?
-        addShapes2Xml Wb.Sheets(i), doc, nd
+        addShapes2Xml wb.Sheets(i), doc, nd
     End With: Next i
 
 ''    Set fso = Nothing
 End Sub
 
-Public Sub saveTextToFile(content, filePath, charset)
+Public Sub saveTextToFileNoBOM(s, filePath, Optional chrset = "utf-8")
+    Dim sm As ADODB.Stream
+    Dim smb As ADODB.Stream
+
+    Set sm = New Stream
+    With sm
+        .Type = adTypeText
+        .Open
+        .Charset = chrset
+        .WriteText s
+        .Position = 3
+        Set smb = New Stream
+        With smb
+            .Type = adTypeBinary
+            .Open
+            sm.CopyTo smb
+            .SaveToFile filePath, adSaveCreateOverWrite
+        End With
+    End With
+End Sub
+
+Public Sub saveTextToFile(content, filePath, Optional chrset = "utf-8")
     '// omegastripes JSON2XML.bas
+    '// saves a utf-8 Xml text file
     With CreateObject("ADODB.Stream")
         .Type = 2 ' adTypeText
         .Open
-        .charset = charset
+        .Charset = chrset
         .WriteText content
         .Position = 0
         .Type = 1 ' TypeBinary
@@ -325,7 +391,7 @@ Private Sub addShapes2Xml(sh As Object, doc As Object, parentt As Object)
                 Call CreateXmlElement(doc, "ChartType", .Chart.ChartType, , nd)
                 Call CreateXmlElement(doc, "ChartStyle", .Chart.ChartStyle, , nd)
                 Call CreateXmlElement(doc, "image", .Chart.Name & ".png", , nd)
-                .Chart.Export FileName:=m.fldr & m.s & "_" & .Chart.Name & ".png", FilterName:="png"
+                .Chart.Export FileName:=m.fldvbp & m.s & "_" & .Chart.Name & ".png", FilterName:="png"
                 Debug.Print , , "["; m.s & "_" & .Chart.Name & ".png]"
             Case msoComment ': Stop
                 '// comments are included in SheetXml file
@@ -403,22 +469,23 @@ Private Sub addReferences2Xml(pj As VBIDE.VBProject, doc As Object, parente As O
     Next i
 End Sub
 
-Private Function isSelectedAddIns() As Boolean  '// did user change installed Addins?
+Private Function isSelectedAddIns() As Boolean      '// did user change installed Addins?
     Dim i As Long
     Dim N As Long
     
-    For i = 1 To Excel.AddIns.Count
+    For i = 1 To Excel.AddIns.Count                 '// Prior count of Installed
         If AddIns(i).Installed Then N = N + i
     Next i
     
     Debug.Print "Select Addins to Export Code"
     Application.Dialogs(xlDialogAddinManager).Show  '// .Dialogs(321).Show
     
-    For i = 1 To Excel.AddIns.Count '// check to see if Addins were selected/deselected
+    For i = 1 To Excel.AddIns.Count                 '// Post count of Installed
         If AddIns(i).Installed Then N = N - i
     Next i
-    isSelectedAddIns = (N <> 0)
     
+    '// True is count is different
+    isSelectedAddIns = (N <> 0)
 End Function
 
 Private Function isVBEPermissionsOn() As Boolean

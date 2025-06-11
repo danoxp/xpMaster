@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" standalone="no"?>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <ExcelFile IsAddin="True" Name="XP.xla">
 	<WorkBook>
 		<ProjectName>xpMaster</ProjectName>
@@ -33,8 +33,8 @@
 		</VBComponent>
 		<VBComponent id="vbc5" Type="StdModule" Name="exportCode">
 			<CodeFile>exportCode.bas</CodeFile>
-			<CountOfDeclarationLines>13</CountOfDeclarationLines>
-			<CountOfLines>441</CountOfLines>
+			<CountOfDeclarationLines>16</CountOfDeclarationLines>
+			<CountOfLines>508</CountOfLines>
 		</VBComponent>
 		<VBComponent id="vbc6" Type="StdModule" Name="testJSstaticClass">
 			<CodeFile>testJSstaticClass.bas</CodeFile>
@@ -44,7 +44,7 @@
 		<VBComponent id="vbc7" Type="StdModule" Name="XmlCreator">
 			<CodeFile>XmlCreator.bas</CodeFile>
 			<CountOfDeclarationLines>1</CountOfDeclarationLines>
-			<CountOfLines>143</CountOfLines>
+			<CountOfLines>186</CountOfLines>
 		</VBComponent>
 		<VBComponent id="vbc8" Type="StdModule" Name="scratchTmp">
 			<CodeFile>scratchTmp.bas</CodeFile>
