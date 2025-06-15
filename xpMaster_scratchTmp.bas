@@ -1,6 +1,53 @@
 Attribute VB_Name = "scratchTmp"
 Option Explicit
 
+Sub DocProperties()
+    Dim dp As DocumentProperties
+    Dim i As Long
+    Dim wb As Excel.Workbook
+    Dim cp As DocumentProperties
+    
+    Set wb = ThisWorkbook
+    Set dp = wb.BuiltinDocumentProperties   '// 34 Office properties only subset valid for excel
+    Set cp = wb.CustomDocumentProperties    '// zero
+    On Error Resume Next
+    For i = 1 To wb.BuiltinDocumentProperties.Count
+        Debug.Print i; wb.BuiltinDocumentProperties(i).Type, _
+            wb.BuiltinDocumentProperties(i).Name; _
+            ": ", wb.BuiltinDocumentProperties(i).Value
+    Next i
+    Stop
+
+'// BuiltinDocumentProperties: 4 string, 3 date, 1 number msoType
+
+'     i  msoType   Name          Value
+'     -  -------   ----          -----
+''    1  4         Title:        xpMaster Addin for Excel
+''    5  4         Comments:     xpMaster Addin, F1 F5 F6 functions, ExportAllVbaCode
+'// only Title & Comments displayed, Comments are 'Description'
+
+''    2  4         Subject:      Automation
+''    3  4         Author:       dano@xpotential.com
+''    4  4         Keywords:     myKeywords
+''    6  4         Template:     myTemplate
+''    7  4         Last author:  Dan O'Donnell
+''    8  4         Revision number:            1
+''    9  4         Application name:           Microsoft Excel
+''    11  3        Creation date:              2/15/2013 11:39:10 PM
+''    12  3        Last save time:             6/12/2025 8:57:58 AM
+''    17  1        Security:      0
+''    18  4        Category:     dano.Category
+''    19  4        Format:       dano.Format
+''    20  4        Manager:      Dan O'Donnell
+''    21  4        Company:      Xpotential Inc
+''    29  4        Hyperlink base:             www.xpearch.com
+''    31  4        Content type:               addin preloaded
+''    32  4        Content status:             dano.status
+''    33  4        Language:     en-us
+''    34  4        Document version:           dano.version
+
+End Sub
+
 Sub TypeCharacteers()
     Dim i%  'Integer
     Dim L&  'Long

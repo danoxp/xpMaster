@@ -34,7 +34,7 @@
 		<VBComponent id="vbc5" Type="StdModule" Name="exportCode">
 			<CodeFile>exportCode.bas</CodeFile>
 			<CountOfDeclarationLines>18</CountOfDeclarationLines>
-			<CountOfLines>510</CountOfLines>
+			<CountOfLines>513</CountOfLines>
 		</VBComponent>
 		<VBComponent id="vbc6" Type="StdModule" Name="testJSstaticClass">
 			<CodeFile>testJSstaticClass.bas</CodeFile>
@@ -49,7 +49,7 @@
 		<VBComponent id="vbc8" Type="StdModule" Name="scratchTmp">
 			<CodeFile>scratchTmp.bas</CodeFile>
 			<CountOfDeclarationLines>1</CountOfDeclarationLines>
-			<CountOfLines>91</CountOfLines>
+			<CountOfLines>138</CountOfLines>
 		</VBComponent>
 		<VBComponent id="vbc9" Type="ClassModule" Name="clsEvents">
 			<CodeFile>clsEvents.cls</CodeFile>

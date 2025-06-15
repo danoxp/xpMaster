@@ -22,6 +22,7 @@ Public Sub ExportAllVBAcode()
     '// Exports all code in open Workbooks and installed Addins
     '// including Worksheet XML and Workbook VBA code
     '// sheet XML files for data to rebuild sheets with formatting and formulas
+    '// charts exported as png, shapes listed, but not exported
     Dim isUserAddInsChanged As Boolean
     Dim i As Long
     Dim s As String
@@ -163,7 +164,7 @@ Private Function isGitBranchGood() As Boolean
         If m.s = "VBAProject" Then
             m.s = Replace(.BuildFileName, ".DLL", vbNullString)
             m.s = VBA.Mid(m.s, VBA.InStrRev(m.s, "\") + 1)
-            Debug.Print " -> git/["; m.s; "]";
+            Debug.Print " -> ["; m.s; "]";
         End If
         
         '// already exported project with same name?
@@ -177,25 +178,27 @@ Private Function isGitBranchGood() As Boolean
         m.dic(m.s) = .BuildFileName     '// m.dic("xpMaster") = "XP.xla"
     End With
     
-    '// set export Directory
+    '// set export Directory to project folder
     m.fldvbp = m.fldroot & m.s & "\"
     
-    '// does export directory exist?
+    '// Determine Git status of project
     s = m.fldvbp & ".git\"
     m.gitbranch = vbNullString
+        Select Case True
+        Case VBA.Len(VBA.Dir(m.fldvbp, vbDirectory)) = 0                '// no project folder found
+            VBA.MkDir m.fldvbp
+            s = "[.." & ROOTDIR & m.s & "] Directory Created": Debug.Print vbLf, s
+            VBA.MsgBox "New Folder: " & vbLf & m.fldvbp, vbExclamation, s
+        Case VBA.Len(VBA.Dir(s, vbDirectory)) = 0                       '// no .git folder found
+            Debug.Print vbLf, ".git folder does Not Exist -> 'git init'"
+        Case VBA.Len(VBA.Dir(s & "refs\heads\ ")) = 0                   '// no commits found
+            Debug.Print vbLf, ".git folder Exists - No Commits yet"
+        Case Else                                                       '// set git branch
+            s = CreateObject("Scripting.FileSystemObject").OpenTextFile(s & "HEAD").ReadLine
+            m.gitbranch = VBA.Mid(s, VBA.InStrRev(s, "/") + 1)
+            Debug.Print "["; m.gitbranch; "]"
+        End Select
     
-    Select Case True
-    Case VBA.Len(VBA.Dir(m.fldvbp, vbDirectory)) = 0
-        VBA.MkDir m.fldvbp: Debug.Print m.fldvbp; " does not exist, created"
-    Case VBA.Len(VBA.Dir(s, vbDirectory)) = 0
-        Debug.Print " no .git folder, 'git init'"
-    Case VBA.Len(VBA.Dir(s & "HEAD")) = 0
-        Debug.Print "git init, but no commits yet"
-    Case Else
-        s = CreateObject("Scripting.FileSystemObject").OpenTextFile(s & "HEAD").ReadLine
-        m.gitbranch = VBA.Mid(s, VBA.InStrRev(s, "/") + 1)
-        Debug.Print "["; m.gitbranch; "]"
-    End Select
     isGitBranchGood = True
 End Function
 
